@@ -1,20 +1,36 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/auth.store';
 
 const countries = ['India', 'United States', 'United Kingdom', 'Germany', 'France', 'Australia', 'Canada', 'Japan', 'China', 'Brazil', 'Other'];
 
+const portalByRole: Record<string, string> = {
+  AUTHOR:   '/portal/author',
+  REVIEWER: '/portal/reviewer',
+  EDITOR:   '/portal/editor',
+  ADMIN:    '/portal/admin',
+};
+
 export default function RegisterPage() {
   const router = useRouter();
+  const { user, isLoading } = useAuthStore();
   const [form, setForm] = useState({ name: '', email: '', password: '', institution: '', country: '' });
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // If user is already logged in, redirect them to their dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      router.replace(portalByRole[user.role] ?? '/portal/author');
+    }
+  }, [user, isLoading, router]);
 
   const upd = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -33,6 +49,16 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
+
+  // Show nothing while checking auth status or if already logged in
+  if (isLoading || user) {
+    return (
+      <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#070f2b 0%,#0B1D51 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={32} color="#C8972A" style={{ animation: 'spin 1s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#070f2b 0%,#0B1D51 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>

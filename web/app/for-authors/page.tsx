@@ -1,8 +1,15 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { CheckCircle, Upload, Users, BookOpen, DollarSign, Shield } from 'lucide-react';
+'use client';
 
-export const metadata: Metadata = { title: 'For Authors — Submission Guidelines' };
+import Link from 'next/link';
+import { CheckCircle, Upload, DollarSign, Shield } from 'lucide-react';
+import { useAuthStore } from '@/store/auth.store';
+
+const portalByRole: Record<string, string> = {
+  AUTHOR:   '/portal/author',
+  REVIEWER: '/portal/reviewer',
+  EDITOR:   '/portal/editor',
+  ADMIN:    '/portal/admin',
+};
 
 const steps = [
   { num: '01', title: 'Prepare Your Manuscript', desc: 'Follow our author guidelines. Manuscripts should be submitted in PDF or Microsoft Word (.docx) format. Ensure proper formatting, citations (APA/IEEE/MLA), and a structured abstract.' },
@@ -25,6 +32,12 @@ const requirements = [
 ];
 
 export default function ForAuthorsPage() {
+  const { user, isLoading } = useAuthStore();
+  const portalHref = user ? (portalByRole[user.role] ?? '/portal/author') : '/auth/login';
+  const portalLabel = user ? 'Go to My Portal' : 'Sign In to Portal';
+  const submitHref = user ? '/portal/author/submit' : '/auth/register';
+  const submitLabel = user ? 'Submit a Manuscript' : 'Create Account & Submit';
+
   return (
     <>
       <div className="page-header">
@@ -32,10 +45,12 @@ export default function ForAuthorsPage() {
           <span className="section-label">Submit Research</span>
           <h1>Author Guidelines</h1>
           <p style={{ maxWidth: 560, marginTop: '0.75rem' }}>Everything you need to know about submitting your research to Daily Solace Journal.</p>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
-            <Link href="/auth/register" className="btn btn-gold btn-lg">Submit a Manuscript</Link>
-            <Link href="/auth/login" className="btn btn-outline-white">Sign In to Portal</Link>
-          </div>
+          {!isLoading && (
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem', flexWrap: 'wrap' }}>
+              <Link href={submitHref} className="btn btn-gold btn-lg">{submitLabel}</Link>
+              <Link href={portalHref} className="btn btn-outline-white">{portalLabel}</Link>
+            </div>
+          )}
         </div>
       </div>
 
@@ -74,11 +89,11 @@ export default function ForAuthorsPage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {[
-              { icon: Upload, title: 'File Formats', desc: 'PDF or Microsoft Word (.docx). Max file size: 20MB.' },
+              { icon: Upload, title: 'File Formats', id: '', desc: 'PDF or Microsoft Word (.docx). Max file size: 20MB.' },
               { icon: DollarSign, title: 'Article Processing Charge', id: 'apc', desc: 'APCs vary by journal (₹3,000 – ₹8,000). Fee waiver available for low-income countries.' },
-              { icon: Shield, title: 'Plagiarism Policy', desc: 'Manuscripts are checked for plagiarism. Similarity index must be below 20%.' },
+              { icon: Shield, title: 'Plagiarism Policy', id: '', desc: 'Manuscripts are checked for plagiarism. Similarity index must be below 20%.' },
             ].map(({ icon: Icon, title, id, desc }) => (
-              <div key={title} id={id} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
+              <div key={title} id={id || undefined} className="card" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-start' }}>
                 <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg,#eef1fa,#dde3f5)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Icon size={18} color="var(--navy)" />
                 </div>
@@ -95,9 +110,11 @@ export default function ForAuthorsPage() {
       {/* CTA */}
       <section style={{ background: 'linear-gradient(135deg,var(--navy-dark),var(--navy))', textAlign: 'center', color: '#fff' }}>
         <div className="container" style={{ maxWidth: 600 }}>
-          <h2 style={{ color: '#fff', marginBottom: '1rem' }}>Ready to Submit?</h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>Create your free author account and submit your research in minutes.</p>
-          <Link href="/auth/register" className="btn btn-gold btn-lg">Get Started — It&apos;s Free</Link>
+          <h2 style={{ color: '#fff', marginBottom: '1rem' }}>{user ? 'Ready to Submit Your Next Paper?' : 'Ready to Submit?'}</h2>
+          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>
+            {user ? `You're logged in as ${user.name}. Head to your dashboard to submit.` : 'Create your free author account and submit your research in minutes.'}
+          </p>
+          <Link href={submitHref} className="btn btn-gold btn-lg">{submitLabel}</Link>
         </div>
       </section>
     </>
