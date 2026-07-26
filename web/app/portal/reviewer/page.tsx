@@ -52,7 +52,7 @@ export default function ReviewerPortal() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="grid-3-cols" style={{ gap: '1rem', marginBottom: '2rem' }}>
           {[
             { label: 'Pending Invitations', value: pending.length, color: 'var(--warning)', icon: Clock },
             { label: 'In Progress', value: accepted.length, color: 'var(--navy)', icon: ClipboardList },

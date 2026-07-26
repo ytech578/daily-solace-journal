@@ -46,7 +46,7 @@ export default function ForAuthorsPage() {
             <span className="section-label">Process</span>
             <h2>Submission Process</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2rem' }}>
+          <div className="grid-3-cols" style={{ gap: '2rem' }}>
             {steps.map((s) => (
               <div key={s.num} className="card">
                 <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--gold)', fontFamily: 'Inter,sans-serif', lineHeight: 1, marginBottom: '0.75rem' }}>{s.num}</div>

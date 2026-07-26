@@ -119,10 +119,10 @@ export function Navbar() {
               )}
             </div>
           ) : (
-            <>
+            <div className="desktop-actions" style={{ display: 'flex', gap: '0.625rem' }}>
               <Link href="/auth/login" className="btn btn-outline-white btn-sm">Sign In</Link>
               <Link href="/auth/register" className="btn btn-gold btn-sm">Submit Paper</Link>
-            </>
+            </div>
           )}
 
           {/* Mobile toggle */}
@@ -148,6 +148,7 @@ export function Navbar() {
       <style>{`
         @media (max-width: 900px) {
           .desktop-nav { display: none !important; }
+          .desktop-actions { display: none !important; }
           .mobile-toggle { display: flex !important; }
         }
       `}</style>

@@ -88,7 +88,7 @@ export default function EditorDashboard() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="grid-4-cols" style={{ gap: '1rem', marginBottom: '2rem' }}>
           {[
             { label: 'Total', value: total, color: 'var(--gray-700)', icon: FileText },
             { label: 'Awaiting Decision', value: pending, color: 'var(--info)', icon: Clock },

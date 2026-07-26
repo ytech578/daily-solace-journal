@@ -78,7 +78,7 @@ export default function AuthorDashboard() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '2rem' }}>
+        <div className="grid-4-cols" style={{ gap: '1rem', marginBottom: '2rem' }}>
           {[
             { label: 'Total Submissions', value: submissions.length, icon: FileText, color: 'var(--navy)' },
             { label: 'In Progress', value: active, icon: Clock, color: 'var(--warning)' },

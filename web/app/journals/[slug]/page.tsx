@@ -87,7 +87,7 @@ export default function JournalDetailPage() {
             {journal.boardMembers?.length > 0 && (
               <div className="card">
                 <h3 style={{ marginBottom: '1.25rem' }}>Editorial Board</h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                <div className="grid-2-cols" style={{ gap: '1rem' }}>
                   {journal.boardMembers.map((bm: any) => (
                     <div key={bm.id} style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                       <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg,var(--navy),var(--navy-light))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>

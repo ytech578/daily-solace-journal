@@ -103,7 +103,7 @@ export default function BrowsePage() {
             <div>
               {/* Subject grid */}
               <h2 style={{ marginBottom: '1.5rem', fontSize: '1.5rem' }}>Browse by Subject</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '3rem' }}>
+              <div className="grid-2-cols" style={{ gap: '1rem', marginBottom: '3rem' }}>
                 {subjects.map((s) => (
                   <Link key={s.slug} href={`/search?subject=${encodeURIComponent(s.name)}`} className="card"
                     style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1rem', borderLeft: `3px solid ${s.color}`, padding: '1.125rem 1.25rem' }}>

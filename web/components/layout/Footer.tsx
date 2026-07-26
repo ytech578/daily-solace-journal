@@ -34,7 +34,7 @@ export function Footer() {
     <footer style={{ background: 'var(--navy-dark)', color: 'rgba(255,255,255,0.75)', marginTop: 'auto' }}>
       {/* Main footer */}
       <div className="container" style={{ padding: '4rem 1.5rem 3rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr', gap: '3rem' }}>
+        <div className="footer-grid" style={{ gap: '3rem' }}>
           {/* Brand */}
           <div>
             <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', marginBottom: '1.25rem', textDecoration: 'none' }}>

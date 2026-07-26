@@ -138,7 +138,7 @@ export default function AboutPage() {
               </div>
 
               {/* Animated Stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.875rem' }}>
+              <div className="grid-2-cols" style={{ gap: '0.875rem' }}>
                 <StatCard value={6} suffix="+" label="Active Journals" />
                 <StatCard value={12} suffix="+" label="Articles Published" />
                 <StatCard value={85} suffix="+" label="Countries Reached" />
@@ -156,7 +156,7 @@ export default function AboutPage() {
             <span className="section-label">Our Values</span>
             <h2>What We Stand For</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+          <div className="grid-4-cols" style={{ gap: '1.5rem' }}>
             {values.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="card" style={{ textAlign: 'center' }}>
                 <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg,var(--navy),var(--navy-light))', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
@@ -203,7 +203,7 @@ export default function AboutPage() {
               Our editors and advisory board members are globally recognized experts in their respective fields.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem' }}>
+          <div className="grid-4-cols" style={{ gap: '1.5rem' }}>
             {team.map((m, i) => (
               <div key={m.name} className="card" style={{ textAlign: 'center' }}>
                 <div style={{ width: 72, height: 72, borderRadius: '50%', background: AVATAR_COLORS[i % AVATAR_COLORS.length], display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.25rem', fontWeight: 700, color: '#fff' }}>

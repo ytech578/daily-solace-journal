@@ -421,32 +421,44 @@ textarea.form-input {
 .delay-300 { animation-delay: 0.3s; }
 .delay-400 { animation-delay: 0.4s; }
 
-/* ─── Responsive ─────────────────────────────────────────────────────────────── */
+/* ─── Responsive Grid Utilities ────────────────────────────────────────────────── */
+
+.grid-4-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-3-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-2-cols {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+}
 
 @media (max-width: 1024px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .subjects-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .why-us-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .journals-grid { grid-template-columns: 1fr !important; }
+  .grid-4-cols { grid-template-columns: repeat(2, 1fr); }
+  .grid-3-cols { grid-template-columns: repeat(2, 1fr); }
+  .footer-grid { grid-template-columns: 2fr 1fr 1fr; }
 }
 
 @media (max-width: 768px) {
-  .portal-layout {
-    grid-template-columns: 1fr;
-  }
-  .portal-sidebar {
-    display: none;
-  }
-  section {
-    padding: 3rem 0;
-  }
+  .portal-layout { grid-template-columns: 1fr; }
+  .portal-sidebar { display: none; }
+  section { padding: 3rem 0; }
   
-  .stats-grid, .subjects-grid, .why-us-grid { 
-    grid-template-columns: 1fr !important; 
-  }
-  
-  .journal-detail-grid {
-    grid-template-columns: 1fr !important;
+  .grid-4-cols, 
+  .grid-3-cols, 
+  .grid-2-cols, 
+  .footer-grid { 
+    grid-template-columns: 1fr; 
   }
 }
 

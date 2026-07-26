@@ -42,7 +42,7 @@ export default function ForReviewersPage() {
             <span className="section-label">Process</span>
             <h2>How Peer Review Works</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1.5rem' }}>
+          <div className="grid-4-cols" style={{ gap: '1.5rem' }}>
             {steps.map(s => (
               <div key={s.num} className="card">
                 <div style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--gold)', fontFamily: 'Inter,sans-serif', marginBottom: '0.75rem' }}>{s.num}</div>
@@ -61,7 +61,7 @@ export default function ForReviewersPage() {
             <span className="section-label">Why Review?</span>
             <h2>Benefits of Peer Review</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1.5rem', maxWidth: 800, margin: '0 auto' }}>
+          <div className="grid-2-cols" style={{ gap: '1.5rem', maxWidth: 800, margin: '0 auto' }}>
             {benefits.map(b => (
               <div key={b.title} className="card" style={{ display: 'flex', gap: '1rem' }}>
                 <CheckCircle size={22} color="var(--success)" style={{ flexShrink: 0, marginTop: 2 }} />

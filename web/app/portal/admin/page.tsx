@@ -69,7 +69,7 @@ export default function AdminPanel() {
 
         {/* Platform stats */}
         {stats && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="grid-4-cols" style={{ gap: '1rem', marginBottom: '2rem' }}>
             {[
               { label: 'Total Users', value: stats.totalUsers, color: 'var(--navy)' },
               { label: 'Submissions', value: stats.totalSubmissions, color: 'var(--info)' },

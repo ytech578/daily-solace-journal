@@ -51,7 +51,7 @@ export default function JournalsPage() {
       <section style={{ background: 'var(--gray-50)', minHeight: '60vh' }}>
         <div className="container">
           {isLoading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }} className="journals-grid">
+            <div className="grid-2-cols" style={{ gap: '1.5rem' }}>
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="card" style={{ padding: '2rem' }}>
                   <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
@@ -76,7 +76,7 @@ export default function JournalsPage() {
               <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem', marginBottom: '2rem' }}>
                 Showing <strong>{journals.length}</strong> active journals
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem' }} className="journals-grid">
+              <div className="grid-2-cols" style={{ gap: '1.5rem' }}>
                 {journals.map((j: any) => {
                   const theme = getTheme(j.name);
                   return (

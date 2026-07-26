@@ -92,7 +92,7 @@ export default function HomePage() {
       {/* ─── Stats ──────────────────────────────────────────────────────────── */}
       <section style={{ padding: 0, background: 'var(--white)', borderBottom: '1px solid var(--gray-100)' }}>
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', borderLeft: '1px solid var(--gray-100)' }}>
+          <div className="grid-4-cols" style={{ borderLeft: '1px solid var(--gray-100)' }}>
             {stats.map((s) => (
               <div key={s.label} style={{ padding: '2.5rem 2rem', textAlign: 'center', borderRight: '1px solid var(--gray-100)' }}>
                 <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--navy)', fontFamily: 'Inter, sans-serif', lineHeight: 1 }}>{s.value}</div>
@@ -111,7 +111,7 @@ export default function HomePage() {
             <h2>Browse by Subject Area</h2>
             <p style={{ color: 'var(--gray-500)', maxWidth: 500, margin: '0.75rem auto 0' }}>Find peer-reviewed research across all major academic disciplines</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+          <div className="grid-4-cols" style={{ gap: '1rem' }}>
             {subjects.map((s) => (
               <Link key={s.name} href={`/browse?subject=${encodeURIComponent(s.name)}`} className="card" style={{ textDecoration: 'none', textAlign: 'center' }}>
                 <div style={{ fontSize: '2.25rem', marginBottom: '0.75rem' }}>{s.icon}</div>
@@ -133,7 +133,7 @@ export default function HomePage() {
             <span className="section-label">Why Choose Us</span>
             <h2>Built for Serious Researchers</h2>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '2rem' }}>
+          <div className="grid-4-cols" style={{ gap: '2rem' }}>
             {whyUs.map(({ icon: Icon, title, desc }) => (
               <div key={title} style={{ textAlign: 'center' }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(135deg,#eef1fa,#dde3f5)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
