@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { BookOpen, Eye, EyeOff, AlertCircle, CheckCircle, Loader2, Mail } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 
@@ -23,6 +23,7 @@ export default function RegisterPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const [loading, setLoading] = useState(false);
 
   // If user is already logged in, redirect them to their dashboard
@@ -41,8 +42,8 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       await api.post('/auth/register', form);
+      setRegisteredEmail(form.email);
       setSuccess(true);
-      setTimeout(() => router.push('/auth/login'), 2500);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Please try again.');
     } finally {
@@ -73,10 +74,27 @@ export default function RegisterPage() {
 
         <div className="card" style={{ padding: '2.5rem', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)', border: 'none' }}>
           {success ? (
-            <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-              <CheckCircle size={48} color="#22c55e" style={{ margin: '0 auto 1rem' }} />
-              <h3 style={{ color: 'var(--navy)', marginBottom: '0.5rem' }}>Account Created!</h3>
-              <p style={{ color: 'var(--gray-500)' }}>Redirecting you to sign in…</p>
+            /* ── Email confirmation screen ── */
+            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', background: '#f0fdf4', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem' }}>
+                <Mail size={32} color="#16a34a" />
+              </div>
+              <h2 style={{ color: 'var(--navy)', marginBottom: '0.5rem' }}>Account Created!</h2>
+              <p style={{ color: 'var(--gray-600)', marginBottom: '1.25rem', lineHeight: 1.7 }}>
+                A welcome email has been sent to<br />
+                <strong style={{ color: 'var(--navy)' }}>{registeredEmail}</strong>.
+              </p>
+              <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: 10, padding: '0.875rem 1rem', marginBottom: '1.5rem', textAlign: 'left' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start' }}>
+                  <CheckCircle size={16} color="#0284c7" style={{ flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ fontSize: '0.8125rem', color: '#0369a1', lineHeight: 1.6 }}>
+                    Please check your inbox (and spam folder) for a welcome message from Daily Solace Journal. You can sign in immediately.
+                  </div>
+                </div>
+              </div>
+              <Link href="/auth/login" className="btn btn-gold" style={{ width: '100%', justifyContent: 'center' }}>
+                Sign In to Your Account
+              </Link>
             </div>
           ) : (
             <form onSubmit={submit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -132,10 +150,12 @@ export default function RegisterPage() {
             </form>
           )}
 
-          <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
-            Already have an account?{' '}
-            <Link href="/auth/login" style={{ color: 'var(--gold)', fontWeight: 600 }}>Sign in</Link>
-          </p>
+          {!success && (
+            <p style={{ textAlign: 'center', marginTop: '1.5rem', color: 'var(--gray-600)', fontSize: '0.875rem' }}>
+              Already have an account?{' '}
+              <Link href="/auth/login" style={{ color: 'var(--gold)', fontWeight: 600 }}>Sign in</Link>
+            </p>
+          )}
         </div>
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
