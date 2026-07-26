@@ -39,12 +39,13 @@ export async function uploadFileHandler(req: Request, res: Response) {
   const file = await submissionsService.attachFile(id, {
     type,
     filename: req.file.originalname,
-    storagePath: req.file.path,
+    storagePath: (req.file as any).location || req.file.path,
     mimeType: req.file.mimetype,
     sizeBytes: req.file.size,
     version: version ? Number(version) : 1,
   });
-  res.status(201).json({ ...file, url: fileUrl(req.file.path) });
+  const fileUrlStr = fileUrl((req.file as any).location || req.file.path);
+  res.status(201).json({ ...file, url: fileUrlStr });
 }
 
 export async function submitRevisionHandler(req: Request, res: Response) {
@@ -54,7 +55,7 @@ export async function submitRevisionHandler(req: Request, res: Response) {
     await submissionsService.attachFile(id, {
       type: 'REVISED_MANUSCRIPT',
       filename: req.file.originalname,
-      storagePath: req.file.path,
+      storagePath: (req.file as any).location || req.file.path,
       mimeType: req.file.mimetype,
       sizeBytes: req.file.size,
     });

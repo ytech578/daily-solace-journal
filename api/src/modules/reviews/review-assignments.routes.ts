@@ -152,7 +152,7 @@ reviewAssignmentsRouter.post(
         data: {
           assignmentId: id,
           ...req.body,
-          annotatedFilePath: req.file?.path,
+          annotatedFilePath: (req.file as any)?.location || req.file?.path,
         },
       });
       await tx.reviewAssignment.update({

@@ -17,6 +17,12 @@ const envSchema = z.object({
   UPLOAD_DIR: z.string().default('uploads'),
   MAX_FILE_SIZE_MB: z.coerce.number().default(20),
 
+  // AWS S3
+  AWS_REGION: z.string().default('placeholder'),
+  AWS_ACCESS_KEY_ID: z.string().default('placeholder'),
+  AWS_SECRET_ACCESS_KEY: z.string().default('placeholder'),
+  AWS_S3_BUCKET_NAME: z.string().default('placeholder'),
+
   // Resend (transactional email)
   RESEND_API_KEY: z.string().default('placeholder'),
   EMAIL_FROM: z.string().default('Daily Solace Journal <no-reply@dailysolacejournal.com>'),

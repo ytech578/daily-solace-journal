@@ -107,7 +107,16 @@ articlesRouter.get(
       return res.send(dummyPdfBuffer);
     };
 
-    if (!file || !fs.existsSync(file.storagePath)) {
+    if (!file) {
+      return sendDummyPdf('placeholder-manuscript.pdf');
+    }
+
+    if (file.storagePath.startsWith('http://') || file.storagePath.startsWith('https://')) {
+      prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
+      return res.redirect(file.storagePath);
+    }
+
+    if (!fs.existsSync(file.storagePath)) {
       // To prevent inline PDF viewer from breaking on seeded data without actual files, serve a dummy PDF
       return sendDummyPdf('placeholder-manuscript.pdf');
     }

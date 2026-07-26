@@ -19,7 +19,7 @@ export async function updateMeHandler(req: Request, res: Response) {
 
 export async function uploadAvatarHandler(req: Request, res: Response) {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-  const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+  const avatarUrl = (req.file as any).location || `/uploads/avatars/${req.file.filename}`;
   const user = await usersService.updateAvatar(req.user!.sub, avatarUrl);
   res.json(user);
 }
