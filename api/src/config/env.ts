@@ -18,17 +18,17 @@ const envSchema = z.object({
   MAX_FILE_SIZE_MB: z.coerce.number().default(20),
 
   // Resend (transactional email)
-  RESEND_API_KEY: z.string().min(1),
+  RESEND_API_KEY: z.string().default('placeholder'),
   EMAIL_FROM: z.string().default('Daily Solace Journal <no-reply@dailysolacejournal.com>'),
 
   // Razorpay (APC payments)
-  RAZORPAY_KEY_ID: z.string().min(1),
-  RAZORPAY_KEY_SECRET: z.string().min(1),
-  RAZORPAY_WEBHOOK_SECRET: z.string().min(1),
+  RAZORPAY_KEY_ID: z.string().default('placeholder'),
+  RAZORPAY_KEY_SECRET: z.string().default('placeholder'),
+  RAZORPAY_WEBHOOK_SECRET: z.string().default('placeholder'),
 
   // CrossRef DOI registration
-  CROSSREF_USER: z.string().min(1),
-  CROSSREF_PASSWORD: z.string().min(1),
+  CROSSREF_USER: z.string().default('placeholder'),
+  CROSSREF_PASSWORD: z.string().default('placeholder'),
   CROSSREF_DEPOSITOR_NAME: z.string().default('Daily Solace Journal'),
   CROSSREF_DEPOSITOR_EMAIL: z.string().email().default('dois@dailysolacejournal.com'),
 });
