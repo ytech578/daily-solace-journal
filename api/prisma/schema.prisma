@@ -1,0 +1,402 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  AUTHOR
+  REVIEWER
+  EDITOR
+  ADMIN
+}
+
+enum SubmissionStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  WITH_EDITOR
+  REVISION_NEEDED
+  REVISED
+  ACCEPTED
+  REJECTED
+  PUBLISHED
+}
+
+enum FileType {
+  MANUSCRIPT
+  COVER_LETTER
+  SUPPLEMENTARY
+  REVISED_MANUSCRIPT
+  ANNOTATED
+  RESPONSE_TO_REVIEWERS
+}
+
+enum AssignmentStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  COMPLETED
+}
+
+enum Recommendation {
+  ACCEPT
+  MINOR_REVISION
+  MAJOR_REVISION
+  REJECT
+}
+
+enum NotificationType {
+  SUBMISSION_RECEIVED
+  REVIEW_ASSIGNED
+  REVIEW_SUBMITTED
+  DECISION_MADE
+  REVISION_REQUESTED
+  PAPER_PUBLISHED
+  PAYMENT_RECEIVED
+  GENERAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─── Users & Auth ────────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  role            Role     @default(AUTHOR)
+  bio             String?
+  institution     String?
+  country         String?
+  profileImageUrl String?
+  orcid           String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  submissions         Submission[]         @relation("AuthorSubmissions")
+  coAuthorships       SubmissionAuthor[]
+  reviewAssignments   ReviewAssignment[]
+  notifications       Notification[]
+  passwordResetTokens PasswordResetToken[]
+  refreshTokens       RefreshToken[]
+  boardMemberships    EditorialBoardMember[]
+  payments            Payment[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
+// ─── Journals (multi-journal directory) ──────────────────────────────────────
+
+model Journal {
+  id            String   @id @default(cuid())
+  name          String
+  slug          String   @unique
+  issn          String?  @unique  // print ISSN
+  eissn         String?  @unique  // electronic ISSN
+  description   String?
+  scope         String?
+  coverImageUrl String?
+  website       String?
+  isActive      Boolean  @default(true)
+  isIndexed     Boolean  @default(false) // approved for directory listing
+  // CrossRef DOI prefix e.g. "10.12345"
+  doiPrefix     String?
+  // Article Processing Charge in paise (1 INR = 100 paise); 0 = free
+  apcAmount     Int      @default(0)
+  currency      String   @default("INR")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subjects     JournalSubject[]
+  submissions  Submission[]
+  volumes      Volume[]
+  boardMembers EditorialBoardMember[]
+
+  @@map("journals")
+}
+
+model Subject {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  iconName    String? // lucide icon name
+
+  journals    JournalSubject[]
+  submissions Submission[]
+  articles    Article[]
+
+  @@map("subjects")
+}
+
+model JournalSubject {
+  journalId String
+  subjectId String
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([journalId, subjectId])
+  @@map("journal_subjects")
+}
+
+model EditorialBoardMember {
+  id          String  @id @default(cuid())
+  journalId   String
+  userId      String?
+  name        String
+  title       String?
+  institution String?
+  country     String?
+  boardRole   String  // "Editor-in-Chief", "Associate Editor", "Section Editor", etc.
+  order       Int     @default(0)
+
+  journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id])
+
+  @@map("editorial_board_members")
+}
+
+// ─── Submission Workflow ──────────────────────────────────────────────────────
+
+model Submission {
+  id          String           @id @default(cuid())
+  journalId   String
+  title       String
+  abstract    String
+  keywords    String[]
+  status      SubmissionStatus @default(DRAFT)
+  coverLetter String?
+  editorNote  String?          // internal note, not visible to authors
+  subjectId   String?
+  authorId    String
+  submittedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  journal     Journal           @relation(fields: [journalId], references: [id])
+  subject     Subject?          @relation(fields: [subjectId], references: [id])
+  author      User              @relation("AuthorSubmissions", fields: [authorId], references: [id])
+  coAuthors   SubmissionAuthor[]
+  files       SubmissionFile[]
+  assignments ReviewAssignment[]
+  events      SubmissionEvent[]
+  article     Article?
+  payment     Payment?
+
+  @@map("submissions")
+}
+
+model SubmissionAuthor {
+  id           String  @id @default(cuid())
+  submissionId String
+  userId       String? // null = external co-author not on platform
+  name         String
+  email        String
+  institution  String?
+  order        Int
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  user       User?      @relation(fields: [userId], references: [id])
+
+  @@map("submission_authors")
+}
+
+model SubmissionFile {
+  id           String   @id @default(cuid())
+  submissionId String
+  type         FileType
+  filename     String   // original name shown to users
+  storagePath  String   // disk path or S3 key
+  mimeType     String
+  sizeBytes    Int
+  version      Int      @default(1)
+  uploadedAt   DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@map("submission_files")
+}
+
+// Audit trail + author-facing timeline
+model SubmissionEvent {
+  id           String   @id @default(cuid())
+  submissionId String
+  actorId      String?  // null = system event
+  type         String   // "SUBMITTED", "REVIEWER_ASSIGNED", "DECISION_MADE", etc.
+  note         String?
+  createdAt    DateTime @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  @@map("submission_events")
+}
+
+// ─── Payments (APC) ──────────────────────────────────────────────────────────
+
+model Payment {
+  id                  String        @id @default(cuid())
+  submissionId        String        @unique
+  userId              String
+  amount              Int           // in paise (INR) — e.g. 500000 = ₹5,000
+  currency            String        @default("INR")
+  status              PaymentStatus @default(PENDING)
+  razorpayOrderId     String?       @unique
+  razorpayPaymentId   String?
+  razorpaySignature   String?
+  receiptNumber       String?       @unique // auto-generated invoice number
+  paidAt              DateTime?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+
+  @@map("payments")
+}
+
+// ─── Peer Review ─────────────────────────────────────────────────────────────
+
+model ReviewAssignment {
+  id            String           @id @default(cuid())
+  submissionId  String
+  reviewerId    String
+  status        AssignmentStatus @default(PENDING)
+  dueDate       DateTime?
+  declineReason String?
+  assignedAt    DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+  reviewer   User       @relation(fields: [reviewerId], references: [id])
+  review     Review?
+
+  @@map("review_assignments")
+}
+
+model Review {
+  id                 String          @id @default(cuid())
+  assignmentId       String          @unique
+  recommendation     Recommendation
+  originality        Int?            // 1–5 rubric
+  methodology        Int?
+  clarity            Int?
+  significance       Int?
+  commentsToAuthor   String          // blinded — sent to author
+  commentsToEditor   String?         // private to editor
+  annotatedFilePath  String?
+  submittedAt        DateTime        @default(now())
+
+  assignment ReviewAssignment @relation(fields: [assignmentId], references: [id])
+
+  @@map("reviews")
+}
+
+// ─── Publication ─────────────────────────────────────────────────────────────
+
+model Volume {
+  id        String   @id @default(cuid())
+  journalId String
+  number    Int
+  year      Int
+  createdAt DateTime @default(now())
+
+  journal Journal @relation(fields: [journalId], references: [id])
+  issues  Issue[]
+
+  @@unique([journalId, number])
+  @@map("volumes")
+}
+
+model Issue {
+  id              String    @id @default(cuid())
+  volumeId        String
+  number          Int
+  title           String?   // e.g. "Special Issue on AI in Healthcare"
+  publicationDate DateTime?
+  isPublished     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  volume   Volume    @relation(fields: [volumeId], references: [id])
+  articles Article[]
+
+  @@unique([volumeId, number])
+  @@map("issues")
+}
+
+model Article {
+  id                 String    @id @default(cuid())
+  submissionId       String    @unique
+  issueId            String?
+  subjectId          String?
+  doi                String?   @unique  // registered with CrossRef
+  crossrefDepositedAt DateTime?          // when DOI was deposited
+  pageStart          Int?
+  pageEnd            Int?
+  viewCount          Int       @default(0)
+  downloadCount      Int       @default(0)
+  publishedAt        DateTime?
+  createdAt          DateTime  @default(now())
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+  issue      Issue?     @relation(fields: [issueId], references: [id])
+  subject    Subject?   @relation(fields: [subjectId], references: [id])
+
+  @@map("articles")
+}
+
+// ─── Notifications ───────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
