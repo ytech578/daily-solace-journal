@@ -46,3 +46,14 @@ export async function resetPasswordHandler(req: Request, res: Response) {
   await authService.resetPassword(req.body);
   res.json({ message: 'Password updated successfully.' });
 }
+
+export async function verifyEmailHandler(req: Request, res: Response) {
+  await authService.verifyEmail(req.body);
+  res.json({ message: 'Email verified successfully.' });
+}
+
+export async function acceptInvitationHandler(req: Request, res: Response) {
+  const { accessToken, refreshToken, user } = await authService.acceptInvitation(req.body);
+  res.cookie(REFRESH_COOKIE, refreshToken, COOKIE_OPTS);
+  res.json({ accessToken, user });
+}

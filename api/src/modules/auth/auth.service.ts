@@ -5,7 +5,7 @@ import { prisma } from '../../lib/prisma';
 import { env } from '../../config/env';
 import { AppError } from '../../middleware/errorHandler';
 import { emailService } from '../../services/email.service';
-import type { RegisterInput, LoginInput, ResetPasswordInput } from './auth.schemas';
+import type { RegisterExtendedInput, LoginInput, ResetPasswordInput, AcceptInvitationInput, VerifyEmailInput } from './auth.schemas';
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_TTL = '15m';
@@ -27,18 +27,30 @@ async function createRefreshToken(userId: string) {
 
 // ─── Service functions ────────────────────────────────────────────────────────
 
-export async function register(input: RegisterInput) {
+export async function register(input: RegisterExtendedInput) {
   const existing = await prisma.user.findUnique({ where: { email: input.email } });
   if (existing) throw new AppError(409, 'Email already registered');
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
-  const { password, ...rest } = input;
+  const { password, confirmPassword, ...rest } = input;
+  const emailVerifyToken = crypto.randomBytes(32).toString('hex');
+
   const user = await prisma.user.create({
-    data: { ...rest, passwordHash },
+    data: { 
+      ...rest, 
+      passwordHash, 
+      name: `${input.firstName} ${input.lastName}`,
+      emailVerifyToken
+    },
     select: { id: true, name: true, email: true, role: true },
   });
 
-  await emailService.sendWelcome({ to: input.email, name: input.name });
+  await emailService.sendEmailVerification({ 
+    to: input.email, 
+    name: user.name,
+    verifyUrl: `${env.CORS_ORIGIN}/auth/verify-email?token=${emailVerifyToken}`
+  });
+  
   return user;
 }
 
@@ -114,4 +126,57 @@ export async function resetPassword(input: ResetPasswordInput) {
     // Invalidate all refresh tokens on password change
     prisma.refreshToken.deleteMany({ where: { userId: record.userId } }),
   ]);
+}
+
+export async function verifyEmail(input: VerifyEmailInput) {
+  const user = await prisma.user.findUnique({ where: { emailVerifyToken: input.token } });
+  if (!user) throw new AppError(400, 'Invalid or expired verification token');
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { emailVerified: true, emailVerifyToken: null },
+  });
+}
+
+export async function acceptInvitation(input: AcceptInvitationInput) {
+  const invite = await prisma.userInvitation.findUnique({ where: { token: input.token } });
+  if (!invite || invite.used || invite.expiresAt < new Date()) {
+    throw new AppError(400, 'Invalid or expired invitation token');
+  }
+
+  const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+
+  const existingUser = await prisma.user.findUnique({ where: { email: invite.email } });
+  let user;
+
+  if (existingUser) {
+    user = await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { role: invite.role, passwordHash }
+    });
+  } else {
+    // Default name from email until they edit profile
+    const nameStr = invite.email.split('@')[0];
+    user = await prisma.user.create({
+      data: { 
+        email: invite.email,
+        name: nameStr,
+        firstName: nameStr,
+        lastName: '',
+        role: invite.role,
+        passwordHash,
+        emailVerified: true
+      }
+    });
+  }
+
+  await prisma.userInvitation.update({
+    where: { id: invite.id },
+    data: { used: true }
+  });
+
+  const accessToken = signAccess(user.id, user.role);
+  const refreshToken = await createRefreshToken(user.id);
+  
+  return { accessToken, refreshToken, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
 }

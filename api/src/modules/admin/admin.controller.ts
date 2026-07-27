@@ -11,3 +11,24 @@ export async function updateUserRoleHandler(req: Request, res: Response) {
   const user = await adminService.updateUserRole(id, req.body);
   res.status(200).json(user);
 }
+
+export async function deactivateUserHandler(req: Request, res: Response) {
+  const { id } = req.params as { id: string };
+  const user = await adminService.deactivateUser(id);
+  res.status(200).json(user);
+}
+
+export async function getStatsHandler(_req: Request, res: Response) {
+  const stats = await adminService.getStats();
+  res.status(200).json(stats);
+}
+
+export async function inviteEditorHandler(req: Request, res: Response) {
+  const result = await adminService.inviteEditor(req.body);
+  res.status(200).json(result);
+}
+
+export async function createAdminHandler(req: Request, res: Response) {
+  const user = await adminService.createAdmin(req.body);
+  res.status(201).json(user);
+}

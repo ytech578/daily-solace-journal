@@ -1,0 +1,190 @@
+﻿src/services/email.service.ts(148,16): error TS1127: Invalid character.
+src/services/email.service.ts(148,17): error TS1136: Property assignment expected.
+src/services/email.service.ts(185,13): error TS1005: ',' expected.
+src/services/email.service.ts(185,55): error TS1005: ',' expected.
+src/services/email.service.ts(185,60): error TS1005: ',' expected.
+src/services/email.service.ts(185,69): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(186,15): error TS1005: ',' expected.
+src/services/email.service.ts(186,16): error TS1005: ',' expected.
+src/services/email.service.ts(186,24): error TS1110: Type expected.
+src/services/email.service.ts(187,15): error TS1005: ',' expected.
+src/services/email.service.ts(187,24): error TS1005: ',' expected.
+src/services/email.service.ts(187,26): error TS1005: ',' expected.
+src/services/email.service.ts(187,34): error TS1005: ',' expected.
+src/services/email.service.ts(187,37): error TS1005: ',' expected.
+src/services/email.service.ts(187,43): error TS1005: ',' expected.
+src/services/email.service.ts(187,48): error TS1005: ',' expected.
+src/services/email.service.ts(187,64): error TS1005: ',' expected.
+src/services/email.service.ts(187,68): error TS1005: ',' expected.
+src/services/email.service.ts(187,75): error TS1005: ',' expected.
+src/services/email.service.ts(187,81): error TS1005: ',' expected.
+src/services/email.service.ts(187,84): error TS1005: ',' expected.
+src/services/email.service.ts(187,91): error TS1005: ',' expected.
+src/services/email.service.ts(187,93): error TS1005: ',' expected.
+src/services/email.service.ts(187,112): error TS1005: ',' expected.
+src/services/email.service.ts(187,117): error TS1005: ',' expected.
+src/services/email.service.ts(187,122): error TS1005: ',' expected.
+src/services/email.service.ts(187,134): error TS1005: ',' expected.
+src/services/email.service.ts(187,139): error TS1003: Identifier expected.
+src/services/email.service.ts(187,140): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(188,14): error TS1005: ',' expected.
+src/services/email.service.ts(189,14): error TS1005: '>' expected.
+src/services/email.service.ts(189,18): error TS1005: ',' expected.
+src/services/email.service.ts(189,33): error TS1005: ',' expected.
+src/services/email.service.ts(189,172): error TS1005: ',' expected.
+src/services/email.service.ts(189,181): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(190,10): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(191,12): error TS1005: ',' expected.
+src/services/email.service.ts(191,50): error TS1005: ',' expected.
+src/services/email.service.ts(191,54): error TS1005: ',' expected.
+src/services/email.service.ts(191,58): error TS1005: ',' expected.
+src/services/email.service.ts(191,112): error TS1002: Unterminated string literal.
+src/services/email.service.ts(207,19): error TS1005: ']' expected.
+src/services/email.service.ts(207,32): error TS1005: ',' expected.
+src/services/email.service.ts(207,43): error TS1005: ',' expected.
+src/services/email.service.ts(207,46): error TS1005: ',' expected.
+src/services/email.service.ts(207,56): error TS1005: ',' expected.
+src/services/email.service.ts(207,59): error TS1005: ',' expected.
+src/services/email.service.ts(209,13): error TS1005: ',' expected.
+src/services/email.service.ts(209,57): error TS1005: ',' expected.
+src/services/email.service.ts(209,65): error TS1005: '>' expected.
+src/services/email.service.ts(209,70): error TS1005: ',' expected.
+src/services/email.service.ts(209,92): error TS1005: ',' expected.
+src/services/email.service.ts(209,95): error TS1005: ',' expected.
+src/services/email.service.ts(210,17): error TS1005: ',' expected.
+src/services/email.service.ts(210,18): error TS1005: ',' expected.
+src/services/email.service.ts(210,26): error TS1110: Type expected.
+src/services/email.service.ts(211,15): error TS1005: ',' expected.
+src/services/email.service.ts(211,20): error TS1005: ',' expected.
+src/services/email.service.ts(211,28): error TS1005: ',' expected.
+src/services/email.service.ts(211,30): error TS1005: ',' expected.
+src/services/email.service.ts(211,39): error TS1005: ',' expected.
+src/services/email.service.ts(211,49): error TS1005: ',' expected.
+src/services/email.service.ts(211,54): error TS1005: ',' expected.
+src/services/email.service.ts(212,12): error TS1005: '>' expected.
+src/services/email.service.ts(212,17): error TS1005: ',' expected.
+src/services/email.service.ts(212,85): error TS1005: ',' expected.
+src/services/email.service.ts(212,88): error TS1005: ',' expected.
+src/services/email.service.ts(212,94): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(213,9): error TS1005: ',' expected.
+src/services/email.service.ts(213,10): error TS1005: ',' expected.
+src/services/email.service.ts(213,18): error TS1005: ',' expected.
+src/services/email.service.ts(218,11): error TS1005: ',' expected.
+src/services/email.service.ts(218,15): error TS1005: ',' expected.
+src/services/email.service.ts(219,9): error TS1005: ',' expected.
+src/services/email.service.ts(219,19): error TS1005: ',' expected.
+src/services/email.service.ts(219,23): error TS1005: ';' expected.
+src/services/email.service.ts(219,29): error TS1005: ';' expected.
+src/services/email.service.ts(219,33): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(219,40): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(219,51): error TS1005: '(' expected.
+src/services/email.service.ts(219,60): error TS1005: ';' expected.
+src/services/email.service.ts(219,68): error TS1005: ';' expected.
+src/services/email.service.ts(219,72): error TS1005: ')' expected.
+src/services/email.service.ts(219,83): error TS1003: Identifier expected.
+src/services/email.service.ts(219,84): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(220,11): error TS1005: ';' expected.
+src/services/email.service.ts(220,20): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(220,23): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(220,40): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(228,19): error TS1005: ']' expected.
+src/services/email.service.ts(228,32): error TS1128: Declaration or statement expected.
+src/services/email.service.ts(228,34): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(228,50): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(230,13): error TS1005: ';' expected.
+src/services/email.service.ts(230,56): error TS1005: ';' expected.
+src/services/email.service.ts(230,67): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(231,17): error TS1005: ';' expected.
+src/services/email.service.ts(231,24): error TS1128: Declaration or statement expected.
+src/services/email.service.ts(231,26): error TS1110: Type expected.
+src/services/email.service.ts(232,16): error TS1005: ';' expected.
+src/services/email.service.ts(232,21): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(232,40): error TS1005: ';' expected.
+src/services/email.service.ts(232,53): error TS1005: '(' expected.
+src/services/email.service.ts(232,55): error TS1005: ';' expected.
+src/services/email.service.ts(232,66): error TS1005: ';' expected.
+src/services/email.service.ts(232,76): error TS1005: ')' expected.
+src/services/email.service.ts(232,79): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(232,93): error TS1128: Declaration or statement expected.
+src/services/email.service.ts(232,95): error TS1110: Type expected.
+src/services/email.service.ts(233,14): error TS1005: ';' expected.
+src/services/email.service.ts(234,14): error TS1005: '>' expected.
+src/services/email.service.ts(234,19): error TS1005: ';' expected.
+src/services/email.service.ts(234,59): error TS1005: ';' expected.
+src/services/email.service.ts(234,61): error TS1110: Type expected.
+src/services/email.service.ts(235,14): error TS1005: '>' expected.
+src/services/email.service.ts(235,19): error TS1005: ';' expected.
+src/services/email.service.ts(235,44): error TS1005: ';' expected.
+src/services/email.service.ts(235,50): error TS1110: Type expected.
+src/services/email.service.ts(236,10): error TS1110: Type expected.
+src/services/email.service.ts(237,19): error TS1005: ';' expected.
+src/services/email.service.ts(237,29): error TS1005: ';' expected.
+src/services/email.service.ts(237,33): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,42): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,49): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,52): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,59): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,62): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,75): error TS1005: ';' expected.
+src/services/email.service.ts(237,86): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,90): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,95): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,99): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(237,119): error TS1003: Identifier expected.
+src/services/email.service.ts(237,120): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(238,11): error TS1005: ';' expected.
+src/services/email.service.ts(238,15): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(247,19): error TS1005: ']' expected.
+src/services/email.service.ts(247,32): error TS1128: Declaration or statement expected.
+src/services/email.service.ts(247,34): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(247,50): error TS1127: Invalid character.
+src/services/email.service.ts(247,52): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(249,13): error TS1005: ';' expected.
+src/services/email.service.ts(249,57): error TS1005: ';' expected.
+src/services/email.service.ts(249,67): error TS1127: Invalid character.
+src/services/email.service.ts(249,69): error TS1110: Type expected.
+src/services/email.service.ts(250,17): error TS1005: ';' expected.
+src/services/email.service.ts(250,24): error TS1128: Declaration or statement expected.
+src/services/email.service.ts(250,26): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(250,32): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(250,40): error TS1005: '(' expected.
+src/services/email.service.ts(250,45): error TS1005: ';' expected.
+src/services/email.service.ts(250,59): error TS1005: ';' expected.
+src/services/email.service.ts(250,63): error TS1005: ')' expected.
+src/services/email.service.ts(250,68): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(250,85): error TS1110: Type expected.
+src/services/email.service.ts(251,16): error TS1005: ';' expected.
+src/services/email.service.ts(252,15): error TS1005: '>' expected.
+src/services/email.service.ts(252,20): error TS1005: ';' expected.
+src/services/email.service.ts(252,47): error TS1005: '>' expected.
+src/services/email.service.ts(252,52): error TS1005: ';' expected.
+src/services/email.service.ts(252,98): error TS1005: ';' expected.
+src/services/email.service.ts(252,101): error TS1003: Identifier expected.
+src/services/email.service.ts(252,159): error TS1110: Type expected.
+src/services/email.service.ts(253,19): error TS1005: '>' expected.
+src/services/email.service.ts(253,24): error TS1005: ';' expected.
+src/services/email.service.ts(253,122): error TS1110: Type expected.
+src/services/email.service.ts(254,15): error TS1005: ';' expected.
+src/services/email.service.ts(254,47): error TS1005: '>' expected.
+src/services/email.service.ts(254,52): error TS1005: ';' expected.
+src/services/email.service.ts(254,153): error TS1110: Type expected.
+src/services/email.service.ts(255,19): error TS1005: '>' expected.
+src/services/email.service.ts(255,24): error TS1005: ';' expected.
+src/services/email.service.ts(255,69): error TS1005: ';' expected.
+src/services/email.service.ts(255,157): error TS1110: Type expected.
+src/services/email.service.ts(256,10): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(257,17): error TS1005: ';' expected.
+src/services/email.service.ts(257,28): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,33): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,37): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,45): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,48): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,52): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,60): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(257,64): error TS1435: Unknown keyword or identifier. Did you mean 'public ation'?
+src/services/email.service.ts(257,82): error TS1003: Identifier expected.
+src/services/email.service.ts(257,83): error TS1161: Unterminated regular expression literal.
+src/services/email.service.ts(258,11): error TS1005: ';' expected.
+src/services/email.service.ts(258,19): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(258,27): error TS1434: Unexpected keyword or identifier.
+src/services/email.service.ts(262,1): error TS1160: Unterminated template literal.

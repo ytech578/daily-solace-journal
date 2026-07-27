@@ -10,6 +10,13 @@ datasource db {
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
+}
+
 enum Role {
   AUTHOR
   REVIEWER
@@ -73,28 +80,46 @@ enum PaymentStatus {
 // ─── Users & Auth ────────────────────────────────────────────────────────────
 
 model User {
-  id              String   @id @default(cuid())
-  email           String   @unique
-  passwordHash    String
-  name            String
-  role            Role     @default(AUTHOR)
-  bio             String?
-  institution     String?
-  country         String?
-  profileImageUrl String?
-  orcid           String?
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                   String   @id @default(cuid())
+  email                String   @unique
+  passwordHash         String
+  name                 String
+  firstName            String?
+  middleName           String?
+  lastName             String?
+  phone                String?
+  role                 Role     @default(AUTHOR)
+  bio                  String?
+  institution          String?
+  department           String?
+  designation          String?
+  country              String?
+  state                String?
+  city                 String?
+  profileImageUrl      String?
+  orcid                String?
+  scopusId             String?
+  googleScholar        String?
+  researchGate         String?
+  linkedin             String?
+  website              String?
+  researchInterests    String[]
+  highestQualification String?
+  emailVerified        Boolean  @default(false)
+  emailVerifyToken     String?  @unique
+  isActive             Boolean  @default(true)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 
-  submissions         Submission[]         @relation("AuthorSubmissions")
-  coAuthorships       SubmissionAuthor[]
-  reviewAssignments   ReviewAssignment[]
-  notifications       Notification[]
-  passwordResetTokens PasswordResetToken[]
-  refreshTokens       RefreshToken[]
-  boardMemberships    EditorialBoardMember[]
-  payments            Payment[]
+  submissions          Submission[]           @relation("AuthorSubmissions")
+  coAuthorships        SubmissionAuthor[]
+  reviewAssignments    ReviewAssignment[]
+  notifications        Notification[]
+  passwordResetTokens  PasswordResetToken[]
+  refreshTokens        RefreshToken[]
+  boardMemberships     EditorialBoardMember[]
+  payments             Payment[]
+  reviewerApplications ReviewerApplication[]
 
   @@map("users")
 }
@@ -130,8 +155,8 @@ model Journal {
   id            String   @id @default(cuid())
   name          String
   slug          String   @unique
-  issn          String?  @unique  // print ISSN
-  eissn         String?  @unique  // electronic ISSN
+  issn          String?  @unique // print ISSN
+  eissn         String?  @unique // electronic ISSN
   description   String?
   scope         String?
   coverImageUrl String?
@@ -187,7 +212,7 @@ model EditorialBoardMember {
   title       String?
   institution String?
   country     String?
-  boardRole   String  // "Editor-in-Chief", "Associate Editor", "Section Editor", etc.
+  boardRole   String // "Editor-in-Chief", "Associate Editor", "Section Editor", etc.
   order       Int     @default(0)
 
   journal Journal @relation(fields: [journalId], references: [id], onDelete: Cascade)
@@ -206,16 +231,16 @@ model Submission {
   keywords    String[]
   status      SubmissionStatus @default(DRAFT)
   coverLetter String?
-  editorNote  String?          // internal note, not visible to authors
+  editorNote  String? // internal note, not visible to authors
   subjectId   String?
   authorId    String
   submittedAt DateTime?
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  journal     Journal           @relation(fields: [journalId], references: [id])
-  subject     Subject?          @relation(fields: [subjectId], references: [id])
-  author      User              @relation("AuthorSubmissions", fields: [authorId], references: [id])
+  journal     Journal            @relation(fields: [journalId], references: [id])
+  subject     Subject?           @relation(fields: [subjectId], references: [id])
+  author      User               @relation("AuthorSubmissions", fields: [authorId], references: [id])
   coAuthors   SubmissionAuthor[]
   files       SubmissionFile[]
   assignments ReviewAssignment[]
@@ -245,8 +270,8 @@ model SubmissionFile {
   id           String   @id @default(cuid())
   submissionId String
   type         FileType
-  filename     String   // original name shown to users
-  storagePath  String   // disk path or S3 key
+  filename     String // original name shown to users
+  storagePath  String // disk path or S3 key
   mimeType     String
   sizeBytes    Int
   version      Int      @default(1)
@@ -261,8 +286,8 @@ model SubmissionFile {
 model SubmissionEvent {
   id           String   @id @default(cuid())
   submissionId String
-  actorId      String?  // null = system event
-  type         String   // "SUBMITTED", "REVIEWER_ASSIGNED", "DECISION_MADE", etc.
+  actorId      String? // null = system event
+  type         String // "SUBMITTED", "REVIEWER_ASSIGNED", "DECISION_MADE", etc.
   note         String?
   createdAt    DateTime @default(now())
 
@@ -274,19 +299,19 @@ model SubmissionEvent {
 // ─── Payments (APC) ──────────────────────────────────────────────────────────
 
 model Payment {
-  id                  String        @id @default(cuid())
-  submissionId        String        @unique
-  userId              String
-  amount              Int           // in paise (INR) — e.g. 500000 = ₹5,000
-  currency            String        @default("INR")
-  status              PaymentStatus @default(PENDING)
-  razorpayOrderId     String?       @unique
-  razorpayPaymentId   String?
-  razorpaySignature   String?
-  receiptNumber       String?       @unique // auto-generated invoice number
-  paidAt              DateTime?
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  id                String        @id @default(cuid())
+  submissionId      String        @unique
+  userId            String
+  amount            Int // in paise (INR) — e.g. 500000 = ₹5,000
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  razorpayOrderId   String?       @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  receiptNumber     String?       @unique // auto-generated invoice number
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
 
   submission Submission @relation(fields: [submissionId], references: [id])
   user       User       @relation(fields: [userId], references: [id])
@@ -314,17 +339,17 @@ model ReviewAssignment {
 }
 
 model Review {
-  id                 String          @id @default(cuid())
-  assignmentId       String          @unique
-  recommendation     Recommendation
-  originality        Int?            // 1–5 rubric
-  methodology        Int?
-  clarity            Int?
-  significance       Int?
-  commentsToAuthor   String          // blinded — sent to author
-  commentsToEditor   String?         // private to editor
-  annotatedFilePath  String?
-  submittedAt        DateTime        @default(now())
+  id                String         @id @default(cuid())
+  assignmentId      String         @unique
+  recommendation    Recommendation
+  originality       Int? // 1–5 rubric
+  methodology       Int?
+  clarity           Int?
+  significance      Int?
+  commentsToAuthor  String // blinded — sent to author
+  commentsToEditor  String? // private to editor
+  annotatedFilePath String?
+  submittedAt       DateTime       @default(now())
 
   assignment ReviewAssignment @relation(fields: [assignmentId], references: [id])
 
@@ -351,7 +376,7 @@ model Issue {
   id              String    @id @default(cuid())
   volumeId        String
   number          Int
-  title           String?   // e.g. "Special Issue on AI in Healthcare"
+  title           String? // e.g. "Special Issue on AI in Healthcare"
   publicationDate DateTime?
   isPublished     Boolean   @default(false)
   createdAt       DateTime  @default(now())
@@ -364,18 +389,18 @@ model Issue {
 }
 
 model Article {
-  id                 String    @id @default(cuid())
-  submissionId       String    @unique
-  issueId            String?
-  subjectId          String?
-  doi                String?   @unique  // registered with CrossRef
-  crossrefDepositedAt DateTime?          // when DOI was deposited
-  pageStart          Int?
-  pageEnd            Int?
-  viewCount          Int       @default(0)
-  downloadCount      Int       @default(0)
-  publishedAt        DateTime?
-  createdAt          DateTime  @default(now())
+  id                  String    @id @default(cuid())
+  submissionId        String    @unique
+  issueId             String?
+  subjectId           String?
+  doi                 String?   @unique // registered with CrossRef
+  crossrefDepositedAt DateTime? // when DOI was deposited
+  pageStart           Int?
+  pageEnd             Int?
+  viewCount           Int       @default(0)
+  downloadCount       Int       @default(0)
+  publishedAt         DateTime?
+  createdAt           DateTime  @default(now())
 
   submission Submission @relation(fields: [submissionId], references: [id])
   issue      Issue?     @relation(fields: [issueId], references: [id])
@@ -399,4 +424,62 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// ─── Reviewer Applications ───────────────────────────────────────────────────
+
+model ReviewerApplication {
+  id                   String            @id @default(cuid())
+  userId               String?
+  firstName            String
+  lastName             String
+  email                String
+  institution          String
+  department           String?
+  designation          String?
+  highestQualification String?
+  country              String
+  orcid                String?
+  scopusId             String?
+  googleScholar        String?
+  researchAreas        String[]
+  bio                  String?
+  cvUrl                String?
+  status               ApplicationStatus @default(PENDING)
+  adminNote            String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("reviewer_applications")
+}
+
+// ─── Invitations ─────────────────────────────────────────────────────────────
+
+model UserInvitation {
+  id        String   @id @default(cuid())
+  email     String
+  role      Role
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_invitations")
+}
+
+// ─── Audit Logs ──────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  action     String
+  targetId   String?
+  targetType String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
 }

@@ -9,6 +9,8 @@ interface AuthUser {
   name: string;
   email: string;
   role: Role;
+  institution?: string;
+  country?: string;
 }
 
 interface AuthState {

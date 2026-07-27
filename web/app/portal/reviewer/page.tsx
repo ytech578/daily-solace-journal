@@ -43,6 +43,7 @@ export default function ReviewerPortal() {
         </div>
         <div className="sidebar-section-title">Reviewer Portal</div>
         <Link href="/portal/reviewer" className="sidebar-link active"><span>📋</span> My Reviews</Link>
+        <Link href="/portal/profile" className="sidebar-link"><span>👤</span> Edit Profile</Link>
       </aside>
 
       <main className="portal-content">

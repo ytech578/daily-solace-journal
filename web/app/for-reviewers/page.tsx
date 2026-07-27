@@ -12,8 +12,8 @@ const benefits = [
 ];
 
 const steps = [
-  { num: '01', title: 'Register as a Reviewer', desc: 'Create an account and select your areas of expertise. Upload your CV and a brief bio.' },
-  { num: '02', title: 'Receive Invitations', desc: 'When a manuscript in your area is submitted, you\'ll receive an email invitation to review.' },
+  { num: '01', title: 'Apply to be a Reviewer', desc: 'Submit an application with your areas of expertise, CV, and a brief bio.' },
+  { num: '02', title: 'Get Approved', desc: 'Once approved, you will receive an email invitation to set up your account.' },
   { num: '03', title: 'Accept & Download', desc: 'Accept the invitation within 5 days and download the anonymous manuscript.' },
   { num: '04', title: 'Submit Your Review', desc: 'Provide a detailed review with scores on originality, methodology, clarity, and significance within the deadline (usually 3 weeks).' },
 ];
@@ -29,7 +29,7 @@ export default function ForReviewersPage() {
             Shape the future of research by becoming a peer reviewer for Daily Solace Journal.
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1.75rem' }}>
-            <Link href="/auth/register" className="btn btn-gold btn-lg">Become a Reviewer</Link>
+            <Link href="/apply-reviewer" className="btn btn-gold btn-lg">Apply to Review</Link>
             <Link href="/portal/reviewer" className="btn btn-outline-white">Reviewer Login</Link>
           </div>
         </div>
@@ -82,7 +82,7 @@ export default function ForReviewersPage() {
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '2rem' }}>
             Register today and help maintain the quality of scholarly publishing.
           </p>
-          <Link href="/auth/register" className="btn btn-gold btn-lg">Join as Reviewer</Link>
+          <Link href="/apply-reviewer" className="btn btn-gold btn-lg">Apply to Review</Link>
         </div>
       </section>
     </>

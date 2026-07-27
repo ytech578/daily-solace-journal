@@ -16,6 +16,7 @@ import { adminRouter } from './modules/admin/admin.routes';
 import { notificationsRouter } from './modules/notifications/notifications.routes';
 import { searchRouter } from './modules/search/search.routes';
 import { journalsRouter } from './modules/journals/journals.routes';
+import { reviewerApplicationsRouter } from './modules/reviewer-applications/reviewer-applications.routes';
 
 export const app = express();
 
@@ -66,6 +67,9 @@ app.use('/api/notifications', notificationsRouter);
 
 // Admin
 app.use('/api/admin', adminRouter);
+
+// Reviewer Applications
+app.use('/api/reviewer-applications', reviewerApplicationsRouter);
 
 // ─── Error handling ───────────────────────────────────────────────────────────
 

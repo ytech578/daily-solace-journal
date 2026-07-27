@@ -8,6 +8,25 @@ interface WelcomeOpts {
   name: string;
 }
 
+interface EmailVerificationOpts {
+  to: string;
+  name: string;
+  verifyUrl: string;
+}
+
+interface InvitationOpts {
+  to: string;
+  name: string;
+  role: string;
+  inviteUrl: string;
+}
+
+interface ApplicationStatusOpts {
+  to: string;
+  name: string;
+  approved: boolean;
+}
+
 interface PasswordResetOpts {
   to: string;
   name: string;
@@ -103,6 +122,57 @@ export const emailService = {
         <p>Thank you for creating an account with Daily Solace Journal.</p>
         <p>You can now submit manuscripts, track your submissions, and manage your profile through our author portal.</p>
       `, 'Welcome to Daily Solace Journal'),
+    });
+  },
+
+  async sendEmailVerification({ to, name, verifyUrl }: EmailVerificationOpts) {
+    return sendEmail({
+      from: env.EMAIL_FROM,
+      to,
+      subject: 'Verify your email address',
+      html: layout(`
+        <h2 style="margin-top:0;color:#0B1D51;">Verify your email</h2>
+        <p>Hi ${name},</p>
+        <p>Please verify your email address to complete your registration.</p>
+        <div style="margin:30px 0;">
+          <a href="${verifyUrl}" style="background:#0B1D51;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;display:inline-block;">Verify Email</a>
+        </div>
+      `, 'Verify your email address'),
+    });
+  },
+
+  async sendInvitation({ to, name, role, inviteUrl }: InvitationOpts) {
+    return sendEmail({
+      from: env.EMAIL_FROM,
+      to,
+      subject: `Invitation to join as ${role}`,
+      html: layout(`
+        <h2 style="margin-top:0;color:#0B1D51;">You're Invited!</h2>
+        <p>Hi ${name},</p>
+        <p>You have been invited to join Daily Solace Journal as a <strong>${role}</strong>.</p>
+        <p>Please click the button below to accept the invitation and set up your password.</p>
+        <div style="margin:30px 0;">
+          <a href="${inviteUrl}" style="background:#0B1D51;color:#fff;text-decoration:none;padding:12px 24px;border-radius:6px;font-weight:600;display:inline-block;">Accept Invitation</a>
+        </div>
+      `, `Invitation to join as ${role}`),
+    });
+  },
+
+  async sendReviewerApplicationStatus({ to, name, approved }: ApplicationStatusOpts) {
+    const subject = approved ? 'Reviewer Application Approved' : 'Reviewer Application Status';
+    const msg = approved 
+      ? 'Congratulations! Your application to become a reviewer has been approved. You will receive a separate invitation email shortly to set up your account.'
+      : 'Thank you for your interest in becoming a reviewer. After careful consideration, we are unable to accept your application at this time.';
+      
+    return sendEmail({
+      from: env.EMAIL_FROM,
+      to,
+      subject,
+      html: layout(`
+        <h2 style="margin-top:0;color:#0B1D51;">Application Status</h2>
+        <p>Dear ${name},</p>
+        <p>${msg}</p>
+      `, subject),
     });
   },
 

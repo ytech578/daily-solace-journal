@@ -77,6 +77,19 @@ export default function AuthorDashboard() {
           <p style={{ color: 'var(--gray-500)', fontSize: '0.9rem' }}>Manage your manuscripts and track their progress.</p>
         </div>
 
+        {/* Profile Completeness Banner */}
+        {(!user.institution || !user.country) && (
+          <div style={{ background: '#fffbeb', border: '1px solid #fef3c7', borderRadius: 8, padding: '1rem 1.5rem', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <h4 style={{ color: '#92400e', marginBottom: '0.25rem' }}>Complete Your Profile</h4>
+              <p style={{ color: '#b45309', fontSize: '0.875rem' }}>Please complete your profile information to ensure smooth processing of your submissions.</p>
+            </div>
+            <Link href="/portal/profile" className="btn btn-sm" style={{ background: '#d97706', color: '#fff', border: 'none' }}>
+              Update Profile
+            </Link>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid-4-cols" style={{ gap: '1rem', marginBottom: '2rem' }}>
           {[

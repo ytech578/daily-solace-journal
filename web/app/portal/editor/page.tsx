@@ -74,6 +74,7 @@ export default function EditorDashboard() {
         {[
           { href: '/portal/editor', label: 'All Submissions', icon: '📋' },
           { href: '/portal/editor/volumes', label: 'Volumes & Issues', icon: '📚' },
+          { href: '/portal/profile', label: 'Edit Profile', icon: '👤' },
         ].map(l => <Link key={l.href} href={l.href} className="sidebar-link active"><span>{l.icon}</span> {l.label}</Link>)}
         {user.role === 'ADMIN' && <>
           <div className="sidebar-section-title">Admin</div>
