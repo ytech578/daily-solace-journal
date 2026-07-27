@@ -7,7 +7,7 @@ const COOKIE_OPTS = {
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict' as const,
   maxAge: 7 * 24 * 60 * 60 * 1000,
-  path: '/api/auth',
+  path: '/',
 };
 
 export async function registerHandler(req: Request, res: Response) {
@@ -33,7 +33,7 @@ export async function refreshHandler(req: Request, res: Response) {
 export async function logoutHandler(req: Request, res: Response) {
   const token = req.cookies?.[REFRESH_COOKIE] as string | undefined;
   if (token) await authService.logout(token);
-  res.clearCookie(REFRESH_COOKIE, { path: '/api/auth' });
+  res.clearCookie(REFRESH_COOKIE, { path: '/' });
   res.status(204).send();
 }
 

@@ -135,7 +135,6 @@ export function Navbar() {
                 <div style={{ width: 26, height: 26, borderRadius: '50%', background: 'linear-gradient(135deg,#C8972A,#e0b84a)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', fontWeight: 700, color: '#fff', flexShrink: 0 }}>
                   {user.name[0].toUpperCase()}
                 </div>
-                <span className="desktop-nav">{user.name.split(' ')[0]}</span>
                 <ChevronDown
                   size={14}
                   style={{
