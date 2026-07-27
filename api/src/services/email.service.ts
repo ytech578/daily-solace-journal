@@ -1,7 +1,13 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 
-const resend = new Resend(env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: env.SMTP_USER,
+    pass: env.SMTP_PASS,
+  },
+});
 
 interface WelcomeOpts {
   to: string;
@@ -100,7 +106,7 @@ function layout(body: string, previewText: string) {
 // ─── Email functions ──────────────────────────────────────────────────────────
 
 const sendEmail = async (options: any) => {
-  if (env.RESEND_API_KEY.includes('placeholder')) {
+  if (env.SMTP_USER.includes('placeholder')) {
     console.log('\n=========================================');
     console.log(`[MOCK EMAIL] To: ${options.to}`);
     console.log(`[MOCK EMAIL] Subject: ${options.subject}`);
@@ -108,7 +114,13 @@ const sendEmail = async (options: any) => {
     console.log('=========================================\n');
     return { id: 'mock_email_id' };
   }
-  return resend.emails.send(options);
+  
+  return transporter.sendMail({
+    from: options.from || env.EMAIL_FROM,
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+  });
 };
 
 export const emailService = {
