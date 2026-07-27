@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(req: NextRequest) {
-  const token = req.cookies.get('refreshToken');
+  const token = req.cookies.get('dsj_refresh');
   const isAuthPage = req.nextUrl.pathname.startsWith('/auth/');
   const isPortal = req.nextUrl.pathname.startsWith('/portal');
   
