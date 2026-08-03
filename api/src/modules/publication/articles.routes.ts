@@ -27,6 +27,7 @@ const ARTICLE_LIST_SELECT = {
     select: {
       title: true,
       abstract: true,
+      fullText: true,
       keywords: true,
       author: { select: { id: true, name: true, institution: true } },
       coAuthors: { orderBy: { order: 'asc' as const } },
@@ -83,6 +84,30 @@ articlesRouter.get(
   }),
 );
 
+// Helper: draw the repeating header strip and footer on every new page
+function addHeaderFooter(
+  doc: InstanceType<any>,
+  journalName: string,
+  pageNum: { count: number },
+) {
+  // thin gold top bar
+  doc.save();
+  doc.rect(0, 0, doc.page.width, 6).fill('#C8972A');
+  doc.restore();
+
+  // navy footer bar at bottom
+  const bY = doc.page.height - 32;
+  doc.save();
+  doc.rect(0, bY, doc.page.width, 32).fill('#0B1D51');
+  doc.fillColor('#aaaaaa').fontSize(8).font('Helvetica')
+    .text(
+      `Daily Solace Journal  ·  ${journalName}  ·  Page ${pageNum.count}`,
+      72, bY + 10,
+      { align: 'center', width: doc.page.width - 144 },
+    );
+  doc.restore();
+}
+
 // Helper: generate a real PDF from article data using PDFKit
 async function generateArticlePdf(article: {
   id: string;
@@ -93,6 +118,7 @@ async function generateArticlePdf(article: {
   submission: {
     title: string;
     abstract: string;
+    fullText?: string | null;
     keywords: string[];
     author: { name: string; institution: string | null };
     coAuthors: { name: string; institution: string | null }[];
@@ -102,119 +128,152 @@ async function generateArticlePdf(article: {
   const PDFDocument = (await import('pdfkit')).default;
 
   return new Promise((resolve, reject) => {
-    const doc = new PDFDocument({ margin: 72, size: 'A4' });
-    const chunks: Buffer[] = [];
-
-    doc.on('data', (chunk: Buffer) => chunks.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(chunks)));
-    doc.on('error', reject);
-
-    const sub = article.submission;
-    const allAuthors = [
-      sub.author,
-      ...sub.coAuthors.filter((c) => c.name !== sub.author.name),
-    ];
-    const year = article.publishedAt ? new Date(article.publishedAt).getFullYear() : '';
+    const sub   = article.submission;
+    const jName = sub.journal?.name ?? 'Daily Solace Journal';
+    const year  = article.publishedAt ? new Date(article.publishedAt).getFullYear() : '';
     const publishedDate = article.publishedAt
       ? new Date(article.publishedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
       : '';
 
-    const pageWidth = doc.page.width - 144;
+    const allAuthors = [
+      sub.author,
+      ...sub.coAuthors.filter((c) => c.name !== sub.author.name),
+    ];
 
-    // ── Header bar ──────────────────────────────────────────────────────────
-    doc.rect(0, 0, doc.page.width, 8).fill('#C8972A');
-    doc.moveDown(0.3);
+    // pageNum is a ref object so the pageAdded callback always has the latest value
+    const pageNum = { count: 0 };
 
-    // Journal name
+    // DO NOT use bufferPages – it causes stream corruption when combined with switchToPage
+    const doc = new PDFDocument({
+      margin: 72,
+      size: 'A4',
+      bufferPages: false,  // must be false for reliable streaming
+      autoFirstPage: false, // we add the first page manually after setting up the listener
+    });
+
+    const chunks: Buffer[] = [];
+    doc.on('data',  (chunk: Buffer) => chunks.push(chunk));
+    doc.on('end',   () => resolve(Buffer.concat(chunks)));
+    doc.on('error', reject);
+
+    // Every time a new page is added (including the first), paint header + footer
+    doc.on('pageAdded', () => {
+      pageNum.count += 1;
+      addHeaderFooter(doc, jName, pageNum);
+    });
+
+    // Now add the first page (triggers pageAdded)
+    doc.addPage();
+
+    const PW    = doc.page.width;
+    const cW    = PW - 144;   // content width (left + right margin = 72 each)
+    const LMAR  = 72;
+
+    // ── Journal name ────────────────────────────────────────────────────────
+    doc.y = 20; // below the 6-px gold bar
     doc.fillColor('#0B1D51').fontSize(10).font('Helvetica')
-      .text(sub.journal?.name ?? 'Daily Solace Journal', { align: 'center' });
-    doc.moveDown(0.2);
+      .text(jName, { align: 'center', width: cW });
+    doc.moveDown(0.4);
 
     // ── Title ───────────────────────────────────────────────────────────────
-    doc.fillColor('#070f2b').fontSize(18).font('Helvetica-Bold')
-      .text(sub.title, { align: 'center', lineGap: 4 });
-    doc.moveDown(0.6);
+    doc.fillColor('#070f2b').fontSize(17).font('Helvetica-Bold')
+      .text(sub.title, LMAR, doc.y, { align: 'center', width: cW, lineGap: 4 });
+    doc.moveDown(0.7);
 
     // ── Authors ─────────────────────────────────────────────────────────────
     doc.fillColor('#333333').fontSize(10).font('Helvetica')
-      .text(allAuthors.map((a) => a.name).join(', '), { align: 'center' });
+      .text(allAuthors.map((a) => a.name).join(', '), LMAR, doc.y, { align: 'center', width: cW });
 
-    const institutions = [...new Set(allAuthors.map((a) => a.institution).filter(Boolean))];
-    if (institutions.length > 0) {
-      doc.moveDown(0.2);
+    const insts = [...new Set(allAuthors.map((a) => a.institution).filter(Boolean))];
+    if (insts.length > 0) {
+      doc.moveDown(0.25);
       doc.fillColor('#666666').fontSize(9).font('Helvetica-Oblique')
-        .text(institutions.join(' · '), { align: 'center' });
+        .text(insts.join(' · '), LMAR, doc.y, { align: 'center', width: cW });
     }
     doc.moveDown(0.5);
 
-    // ── Meta bar ────────────────────────────────────────────────────────────
-    const metaParts: string[] = [];
-    if (publishedDate) metaParts.push(`Published: ${publishedDate}`);
-    if (article.doi) metaParts.push(`DOI: ${article.doi}`);
-    if (article.pageStart) metaParts.push(`Pages: ${article.pageStart}–${article.pageEnd}`);
-
-    if (metaParts.length > 0) {
+    // ── Meta row ────────────────────────────────────────────────────────────
+    const meta: string[] = [];
+    if (publishedDate) meta.push(`Published: ${publishedDate}`);
+    if (article.doi)   meta.push(`DOI: ${article.doi}`);
+    if (article.pageStart) meta.push(`Pages: ${article.pageStart}–${article.pageEnd}`);
+    if (meta.length > 0) {
       doc.fillColor('#888888').fontSize(8.5).font('Helvetica')
-        .text(metaParts.join('   |   '), { align: 'center' });
+        .text(meta.join('   |   '), LMAR, doc.y, { align: 'center', width: cW });
       doc.moveDown(0.5);
     }
 
-    // Divider
-    doc.moveTo(72, doc.y).lineTo(doc.page.width - 72, doc.y).strokeColor('#C8972A').lineWidth(1.5).stroke();
-    doc.moveDown(0.8);
+    // Gold divider
+    doc.moveTo(LMAR, doc.y).lineTo(PW - LMAR, doc.y).strokeColor('#C8972A').lineWidth(1.5).stroke();
+    doc.moveDown(0.9);
 
-    // ── Abstract ────────────────────────────────────────────────────────────
-    doc.fillColor('#0B1D51').fontSize(12).font('Helvetica-Bold').text('Abstract');
-    doc.moveDown(0.3);
+    // ── Abstract heading ────────────────────────────────────────────────────
+    doc.fillColor('#0B1D51').fontSize(12).font('Helvetica-Bold')
+      .text('Abstract', LMAR, doc.y);
+    doc.moveDown(0.35);
 
-    const sectionPattern = /\b(Objective|Background|Methods|Results|Conclusion|Introduction|Discussion):/gi;
-    const abstractText = sub.abstract;
+    // Abstract body – render each word/sentence as plain justified text
+    // to avoid the `continued` font-switch corruption
+    doc.fillColor('#333333').fontSize(10).font('Helvetica')
+      .text(sub.abstract, LMAR, doc.y, { align: 'justify', width: cW, lineGap: 3.5 });
+    doc.moveDown(0.9);
 
-    if (sectionPattern.test(abstractText)) {
-      const parts = abstractText.split(/(?=\b(?:Objective|Background|Methods|Results|Conclusion|Introduction|Discussion):)/i);
-      parts.forEach((part) => {
-        const match = part.match(/^(\w+):(.*)/s);
-        if (match) {
-          doc.fillColor('#0B1D51').fontSize(10).font('Helvetica-Bold').text(match[1] + ':', { continued: true });
-          doc.fillColor('#333333').fontSize(10).font('Helvetica').text(' ' + match[2].trim(), { lineGap: 3 });
-          doc.moveDown(0.3);
+    // ── Full text sections ──────────────────────────────────────────────────
+    if (sub.fullText && sub.fullText.trim()) {
+      // Light grey divider
+      doc.moveTo(LMAR, doc.y).lineTo(PW - LMAR, doc.y).strokeColor('#cbd5e1').lineWidth(0.75).stroke();
+      doc.moveDown(0.9);
+
+      // Split on numbered section headings like "\n1. Introduction"
+      const rawSections = sub.fullText.trim().split(/(?=\n\d+\.\s+\S)/);
+
+      for (const raw of rawSections) {
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+
+        // Try to peel off the heading (e.g. "1. Introduction\nThe rest...")
+        const m = trimmed.match(/^(\d+\.\s+[^\n]+)\n([\s\S]*)/);
+        if (m) {
+          // Section heading
+          doc.fillColor('#0B1D51').fontSize(13).font('Helvetica-Bold')
+            .text(m[1].trim(), LMAR, doc.y, { width: cW });
+          doc.moveDown(0.35);
+          // Section body
+          doc.fillColor('#333333').fontSize(10.5).font('Helvetica')
+            .text(m[2].trim(), LMAR, doc.y, { align: 'justify', width: cW, lineGap: 4 });
         } else {
-          doc.fillColor('#333333').fontSize(10).font('Helvetica').text(part.trim(), { lineGap: 3 });
+          // No heading – just plain body paragraph
+          doc.fillColor('#333333').fontSize(10.5).font('Helvetica')
+            .text(trimmed, LMAR, doc.y, { align: 'justify', width: cW, lineGap: 4 });
         }
-      });
-    } else {
-      doc.fillColor('#333333').fontSize(10).font('Helvetica')
-        .text(abstractText, { lineGap: 3, align: 'justify', width: pageWidth });
+        doc.moveDown(0.9);
+      }
     }
-
-    doc.moveDown(0.8);
 
     // ── Keywords ────────────────────────────────────────────────────────────
     if (sub.keywords && sub.keywords.length > 0) {
-      doc.fillColor('#0B1D51').fontSize(10).font('Helvetica-Bold').text('Keywords: ', { continued: true });
+      // Render label + value as two separate text calls (no `continued`) to avoid corruption
+      const kwLabel = 'Keywords: ';
+      const kwValue = sub.keywords.join(', ');
+      const labelW  = doc.fontSize(10).widthOfString(kwLabel);
+
+      const startX = LMAR;
+      const startY = doc.y;
+      doc.fillColor('#0B1D51').fontSize(10).font('Helvetica-Bold')
+        .text(kwLabel, startX, startY, { lineBreak: false });
       doc.fillColor('#555555').fontSize(10).font('Helvetica-Oblique')
-        .text(sub.keywords.join(', '), { lineGap: 2 });
-      doc.moveDown(0.8);
+        .text(kwValue, startX + labelW, startY, { width: cW - labelW, lineGap: 2 });
+      doc.moveDown(0.9);
     }
 
     // ── Open Access notice ──────────────────────────────────────────────────
-    doc.moveTo(72, doc.y).lineTo(doc.page.width - 72, doc.y).strokeColor('#e2e8f0').lineWidth(1).stroke();
+    doc.moveTo(LMAR, doc.y).lineTo(PW - LMAR, doc.y).strokeColor('#e2e8f0').lineWidth(1).stroke();
     doc.moveDown(0.6);
-
     doc.fillColor('#888888').fontSize(8).font('Helvetica')
       .text(
-        `© ${year} ${sub.journal?.name ?? 'Daily Solace Journal'}. This is an open-access article distributed under the terms of the Creative Commons Attribution 4.0 International License (CC BY 4.0).`,
-        { align: 'center', lineGap: 2 }
-      );
-
-    // ── Footer ──────────────────────────────────────────────────────────────
-    const bottomY = doc.page.height - 40;
-    doc.rect(0, bottomY - 8, doc.page.width, 8).fill('#0B1D51');
-    doc.fillColor('#aaaaaa').fontSize(8).font('Helvetica')
-      .text(
-        `Daily Solace Journal  ·  ${sub.journal?.name ?? ''}  ·  Page 1 of 1`,
-        72, bottomY + 2,
-        { align: 'center', width: pageWidth }
+        `© ${year} ${jName}. Open-access article under CC BY 4.0 International License.`,
+        LMAR, doc.y,
+        { align: 'center', width: cW, lineGap: 2 },
       );
 
     doc.end();
@@ -239,6 +298,7 @@ articlesRouter.get(
           select: {
             title: true,
             abstract: true,
+            fullText: true,
             keywords: true,
             author: { select: { name: true, institution: true } },
             coAuthors: { orderBy: { order: 'asc' as const }, select: { name: true, institution: true } },
@@ -259,7 +319,7 @@ articlesRouter.get(
         prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
         const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${sanitizedTitle}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
         return res.sendFile(path.resolve(file.storagePath));
       }
     }
@@ -277,7 +337,7 @@ articlesRouter.get(
         prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
         const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="${sanitizedTitle}.pdf"`);
+        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
         return res.sendFile(path.resolve(filePath));
       }
     }
@@ -288,7 +348,7 @@ articlesRouter.get(
     const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="${sanitizedTitle}.pdf"`);
+    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
     res.setHeader('Content-Length', pdfBuffer.length);
     return res.send(pdfBuffer);
   }),
