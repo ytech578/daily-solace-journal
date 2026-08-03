@@ -222,7 +222,7 @@ export default function ArticleDetailPage() {
                 <button onClick={() => setShowViewer(!showViewer)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
                   <BookOpen size={16} /> {showViewer ? 'Hide Viewer' : 'Read Online'}
                 </button>
-                <a href={`/api/articles/${article.id}/download`} className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }} target="_blank" rel="noreferrer">
+                <a href={`/api/articles/${article.id}/download`} download className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }} target="_blank" rel="noreferrer">
                   <Download size={16} /> Download PDF
                 </a>
               </div>

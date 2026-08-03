@@ -3,6 +3,7 @@ import { asyncHandler } from '../../lib/asyncHandler';
 import { prisma } from '../../lib/prisma';
 import { AppError } from '../../middleware/errorHandler';
 import fs from 'fs';
+import path from 'path';
 
 export const articlesRouter = Router();
 
@@ -38,14 +39,21 @@ const ARTICLE_LIST_SELECT = {
 articlesRouter.get(
   '/',
   asyncHandler(async (req, res) => {
-    const { journalId, subjectId, page = '1', limit = '20' } = req.query as Record<string, string>;
+    const { journalId, subjectId, subjectSlug, page = '1', limit = '20' } = req.query as Record<string, string>;
     const take = Math.min(Number(limit), 50);
     const skip = (Number(page) - 1) * take;
+
+    // Resolve subjectSlug to subjectId if provided
+    let resolvedSubjectId = subjectId;
+    if (!resolvedSubjectId && subjectSlug) {
+      const subject = await prisma.subject.findUnique({ where: { slug: subjectSlug }, select: { id: true } });
+      if (subject) resolvedSubjectId = subject.id;
+    }
 
     const where = {
       publishedAt: { not: null },
       ...(journalId ? { submission: { journalId } } : {}),
-      ...(subjectId ? { subjectId } : {}),
+      ...(resolvedSubjectId ? { subjectId: resolvedSubjectId } : {}),
     };
 
     const [items, total] = await prisma.$transaction([
@@ -84,6 +92,7 @@ articlesRouter.get(
       where: { id },
       select: {
         id: true,
+        pdfUrl: true,
         submission: {
           select: {
             title: true,
@@ -108,6 +117,16 @@ articlesRouter.get(
     };
 
     if (!file) {
+      if (article.pdfUrl) {
+        const filePath = path.join(process.cwd(), article.pdfUrl);
+        if (fs.existsSync(filePath)) {
+          prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
+          const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `inline; filename="${sanitizedTitle}.pdf"`);
+          return res.sendFile(filePath);
+        }
+      }
       return sendDummyPdf('placeholder-manuscript.pdf');
     }
 
@@ -124,7 +143,9 @@ articlesRouter.get(
     prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
 
     const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
-    res.download(file.storagePath, `${sanitizedTitle}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${sanitizedTitle}.pdf"`);
+    res.sendFile(file.storagePath);
   }),
 );
 
