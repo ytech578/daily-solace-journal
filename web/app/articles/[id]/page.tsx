@@ -4,15 +4,43 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { BookOpen, Download, Eye, Calendar, ArrowLeft, Users, FileText, Quote, Share2, Link2, Clock } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { BookOpen, Download, Eye, Calendar, ArrowLeft, Quote, Link2, Clock, ChevronDown, ChevronUp, CheckCircle } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Parse a structured abstract into labelled sections */
+function parseAbstract(text: string): { label: string | null; body: string }[] {
+  const LABELS = ['Objective', 'Background', 'Methods', 'Results', 'Conclusion', 'Introduction', 'Discussion'];
+  const pattern = new RegExp(`(?=\\b(${LABELS.join('|')}):)`, 'i');
+  const parts = text.split(pattern).filter(Boolean);
+
+  // Check if any LABEL exists
+  const hasStructure = LABELS.some(l => new RegExp(`\\b${l}:`, 'i').test(text));
+  if (!hasStructure) return [{ label: null, body: text }];
+
+  const sections: { label: string | null; body: string }[] = [];
+  for (const part of parts) {
+    const m = part.match(/^(\w+):([\s\S]*)/);
+    if (m && LABELS.some(l => l.toLowerCase() === m[1].toLowerCase())) {
+      sections.push({ label: m[1], body: m[2].trim() });
+    } else if (part.trim()) {
+      sections.push({ label: null, body: part.trim() });
+    }
+  }
+  return sections.length ? sections : [{ label: null, body: text }];
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 
 export default function ArticleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [readProgress, setReadProgress] = useState(0);
   const [citationFormat, setCitationFormat] = useState('APA');
   const [copied, setCopied] = useState(false);
-  const [showViewer, setShowViewer] = useState(false);
+  const [showReader, setShowReader] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadDone, setDownloadDone] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,20 +67,62 @@ export default function ArticleDetailPage() {
     enabled: !!article?.subject?.id,
   });
 
-  if (isLoading) return <div style={{ padding: '6rem', textAlign: 'center', color: 'var(--gray-400)' }}>Loading article…</div>;
-  if (!article) return <div style={{ padding: '6rem', textAlign: 'center' }}><h3>Article not found</h3><Link href="/articles" className="btn btn-primary" style={{ marginTop: '1rem' }}>← Back to Articles</Link></div>;
+  // Download PDF using fetch + Blob so IDM / browser extensions cannot intercept
+  const handleDownload = useCallback(async () => {
+    if (!article) return;
+    setDownloading(true);
+    try {
+      const response = await fetch(`/api/articles/${article.id}/download`);
+      if (!response.ok) throw new Error('Download failed');
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const sanitized = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
+      a.href = url;
+      a.download = `${sanitized}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setDownloadDone(true);
+      setTimeout(() => setDownloadDone(false), 3000);
+    } catch (err) {
+      alert('Download failed. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  }, [article]);
+
+  if (isLoading) return (
+    <div style={{ padding: '6rem', textAlign: 'center', color: 'var(--gray-400)' }}>
+      <div style={{ width: 40, height: 40, border: '3px solid var(--gray-200)', borderTopColor: 'var(--navy)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 1rem' }} />
+      Loading article…
+    </div>
+  );
+
+  if (!article) return (
+    <div style={{ padding: '6rem', textAlign: 'center' }}>
+      <h3>Article not found</h3>
+      <Link href="/articles" className="btn btn-primary" style={{ marginTop: '1rem' }}>← Back to Articles</Link>
+    </div>
+  );
 
   const sub = article.submission;
   const authors = [sub.author, ...(sub.coAuthors ?? [])];
-  
-  // Reading time (assume 200 wpm)
+
+  // Reading time (200 wpm)
   const wordCount = sub.abstract.split(/\s+/).length;
   const readTime = Math.max(1, Math.ceil(wordCount / 200));
+
+  // Parse abstract sections
+  const abstractSections = parseAbstract(sub.abstract);
 
   // Citations
   const year = article.publishedAt ? new Date(article.publishedAt).getFullYear() : '—';
   const authorNamesAPA = authors.map((a: any) => `${a.name.split(' ').pop()}, ${a.name.split(' ')[0][0]}.`).join(', ');
-  const authorNamesMLA = authors.length > 2 ? `${authors[0].name.split(' ').pop()}, ${authors[0].name.split(' ')[0]}, et al.` : authors.map((a: any) => `${a.name.split(' ').pop()}, ${a.name.split(' ')[0]}`).join(' and ');
+  const authorNamesMLA = authors.length > 2
+    ? `${authors[0].name.split(' ').pop()}, ${authors[0].name.split(' ')[0]}, et al.`
+    : authors.map((a: any) => `${a.name.split(' ').pop()}, ${a.name.split(' ')[0]}`).join(' and ');
   const doiStr = article.doi ? `https://doi.org/${article.doi}` : '';
 
   const citations: Record<string, string> = {
@@ -71,6 +141,7 @@ export default function ArticleDetailPage() {
 
   return (
     <>
+      {/* Reading progress bar */}
       <div className="reading-progress-container">
         <div className="reading-progress-bar" style={{ width: `${readProgress}%` }} />
       </div>
@@ -117,26 +188,45 @@ export default function ArticleDetailPage() {
       {/* Content */}
       <section style={{ background: 'var(--gray-50)' }}>
         <div className="container journal-detail-grid" style={{ maxWidth: 900, display: 'grid', gridTemplateColumns: '1fr 280px', gap: '2.5rem', alignItems: 'start' }}>
-          
+
           {/* Main */}
           <div>
             {/* Abstract */}
             <div className="card" style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <h3 style={{ fontSize: '1.125rem' }}>Abstract</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                <h3 style={{ fontSize: '1.125rem', margin: 0 }}>Abstract</h3>
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={copyLink} className="btn btn-outline btn-sm" style={{ padding: '0.375rem 0.5rem' }} title="Copy Link">
-                    <Link2 size={16} /> {copied && <span style={{ fontSize: '0.75rem', marginLeft: 4 }}>Copied</span>}
+                  <button onClick={copyLink} className="btn btn-outline btn-sm" style={{ padding: '0.375rem 0.625rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.375rem' }} title="Copy link">
+                    <Link2 size={14} /> {copied ? 'Copied!' : 'Copy Link'}
                   </button>
-                  <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(sub.title)}&url=${encodeURIComponent(window.location.href)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ padding: '0.375rem 0.5rem', fontSize: '0.75rem', fontWeight: 600 }} title="Share on Twitter">
-                    Twitter
-                  </a>
-                  <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(sub.title)}`} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm" style={{ padding: '0.375rem 0.5rem', fontSize: '0.75rem', fontWeight: 600 }} title="Share on LinkedIn">
-                    LinkedIn
-                  </a>
+                  <a
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(sub.title)}&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn btn-outline btn-sm"
+                    style={{ padding: '0.375rem 0.625rem', fontSize: '0.8rem' }}
+                  >Twitter</a>
+                  <a
+                    href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(typeof window !== 'undefined' ? window.location.href : '')}&title=${encodeURIComponent(sub.title)}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="btn btn-outline btn-sm"
+                    style={{ padding: '0.375rem 0.625rem', fontSize: '0.8rem' }}
+                  >LinkedIn</a>
                 </div>
               </div>
-              <p style={{ lineHeight: 1.85, color: 'var(--gray-600)', fontSize: '0.95rem' }}>{sub.abstract}</p>
+
+              {/* Structured abstract renderer */}
+              {abstractSections.map((section, i) => (
+                <div key={i} style={{ marginBottom: i < abstractSections.length - 1 ? '0.875rem' : 0 }}>
+                  {section.label && (
+                    <span style={{ fontWeight: 700, color: 'var(--navy)', fontSize: '0.95rem' }}>
+                      {section.label}:{' '}
+                    </span>
+                  )}
+                  <span style={{ lineHeight: 1.85, color: 'var(--gray-600)', fontSize: '0.95rem' }}>
+                    {section.body}
+                  </span>
+                </div>
+              ))}
             </div>
 
             {/* Keywords */}
@@ -149,6 +239,87 @@ export default function ArticleDetailPage() {
               </div>
             )}
 
+            {/* In-page Article Reader */}
+            <div className="card" style={{ marginBottom: '1.5rem', padding: 0, overflow: 'hidden', border: '2px solid var(--navy)' }}>
+              <button
+                onClick={() => setShowReader(!showReader)}
+                style={{
+                  width: '100%', padding: '1rem 1.5rem', background: 'var(--navy)', color: '#fff',
+                  border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
+                  alignItems: 'center', fontFamily: 'Inter,sans-serif', fontWeight: 600, fontSize: '0.95rem'
+                }}
+              >
+                <span style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <BookOpen size={18} /> Read Full Article Online
+                </span>
+                {showReader ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {showReader && (
+                <div style={{ padding: '2.5rem', background: '#fff' }}>
+                  {/* Article reader header */}
+                  <div style={{ borderBottom: '3px solid var(--gold)', paddingBottom: '1.5rem', marginBottom: '2rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--gray-400)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.75rem' }}>
+                      {sub.journal?.name}
+                    </div>
+                    <h2 style={{ fontSize: '1.5rem', lineHeight: 1.35, color: 'var(--navy)', fontFamily: '"Playfair Display",Georgia,serif', marginBottom: '1rem' }}>
+                      {sub.title}
+                    </h2>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', fontSize: '0.875rem', color: 'var(--gray-600)' }}>
+                      {authors.map((a: any, i: number) => (
+                        <span key={i}>{a.name}{a.institution ? ` (${a.institution})` : ''}{i < authors.length - 1 ? ',' : ''}{' '}</span>
+                      ))}
+                    </div>
+                    {article.publishedAt && (
+                      <div style={{ fontSize: '0.8rem', color: 'var(--gray-400)', marginTop: '0.5rem' }}>
+                        Published: {new Date(article.publishedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })}
+                        {article.doi && <span style={{ marginLeft: '1rem' }}>DOI: {article.doi}</span>}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Abstract sections */}
+                  <div style={{ marginBottom: '2rem' }}>
+                    <h3 style={{ fontSize: '1.125rem', color: 'var(--navy)', marginBottom: '1rem', fontFamily: '"Playfair Display",Georgia,serif' }}>Abstract</h3>
+                    {abstractSections.map((section, i) => (
+                      <p key={i} style={{ lineHeight: 1.9, color: '#333', fontSize: '1rem', marginBottom: '0.75rem', textAlign: 'justify' }}>
+                        {section.label && (
+                          <strong style={{ color: 'var(--navy)' }}>{section.label}: </strong>
+                        )}
+                        {section.body}
+                      </p>
+                    ))}
+                  </div>
+
+                  {/* Keywords */}
+                  {sub.keywords?.length > 0 && (
+                    <div style={{ marginBottom: '2rem', paddingTop: '1.25rem', borderTop: '1px solid var(--gray-100)' }}>
+                      <strong style={{ color: 'var(--navy)', fontSize: '0.9rem' }}>Keywords: </strong>
+                      <span style={{ fontStyle: 'italic', color: 'var(--gray-600)', fontSize: '0.9rem' }}>
+                        {sub.keywords.join(', ')}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Note about full text */}
+                  <div style={{ background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', border: '1px solid #bfdbfe', borderRadius: '0.75rem', padding: '1.25rem', display: 'flex', gap: '0.875rem', alignItems: 'flex-start' }}>
+                    <Download size={20} color="#2563eb" style={{ flexShrink: 0, marginTop: 2 }} />
+                    <div>
+                      <div style={{ fontWeight: 600, color: '#1e40af', fontSize: '0.9rem', marginBottom: '0.25rem' }}>Download PDF for Full Text</div>
+                      <div style={{ color: '#3b82f6', fontSize: '0.85rem', lineHeight: 1.6 }}>
+                        The complete formatted article including all figures, tables, and references is available as a PDF. Click "Download PDF" in the sidebar to save a copy.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Open Access badge */}
+                  <div style={{ marginTop: '1.5rem', padding: '0.875rem 1rem', background: 'var(--gray-50)', borderRadius: '0.5rem', fontSize: '0.8rem', color: 'var(--gray-500)', textAlign: 'center', borderTop: '1px solid var(--gray-200)' }}>
+                    © {year} {sub.journal?.name}. Open Access article under CC BY 4.0 International License.
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Citation */}
             <div className="card">
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
@@ -156,10 +327,10 @@ export default function ArticleDetailPage() {
                   <Quote size={18} color="var(--navy)" />
                   <h4>How to Cite</h4>
                 </div>
-                <select 
-                  value={citationFormat} 
+                <select
+                  value={citationFormat}
                   onChange={(e) => setCitationFormat(e.target.value)}
-                  className="form-input" 
+                  className="form-input"
                   style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.8125rem', minHeight: 'auto' }}
                 >
                   <option value="APA">APA</option>
@@ -170,7 +341,7 @@ export default function ArticleDetailPage() {
                 </select>
               </div>
               {citationFormat === 'BibTeX' ? (
-                <pre style={{ background: 'var(--gray-900)', borderRadius: 8, padding: '1rem', fontSize: '0.8125rem', color: '#a3e635', lineHeight: 1.75, overflowX: 'auto', fontFamily: '"Fira Code", "Courier New", monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+                <pre style={{ background: 'var(--gray-900)', borderRadius: 8, padding: '1rem', fontSize: '0.8125rem', color: '#a3e635', lineHeight: 1.75, overflowX: 'auto', fontFamily: '"Fira Code","Courier New",monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                   {citations.BibTeX}
                 </pre>
               ) : (
@@ -179,21 +350,6 @@ export default function ArticleDetailPage() {
                 </div>
               )}
             </div>
-
-            {/* PDF Viewer */}
-            {showViewer && (
-              <div className="card" style={{ marginBottom: '1.5rem', padding: 0, overflow: 'hidden' }}>
-                <div style={{ padding: '1rem 1.5rem', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <h4 style={{ margin: 0 }}>Inline PDF Viewer</h4>
-                  <button onClick={() => setShowViewer(false)} className="btn btn-outline btn-sm" style={{ padding: '0.25rem 0.5rem' }}>Close</button>
-                </div>
-                <iframe 
-                  src={`/api/articles/${article.id}/download#view=FitH`} 
-                  style={{ width: '100%', height: '800px', border: 'none', display: 'block' }} 
-                  title="PDF Viewer"
-                />
-              </div>
-            )}
 
             {/* Related Articles */}
             {relatedArticles.length > 0 && (
@@ -219,13 +375,30 @@ export default function ArticleDetailPage() {
             <div className="card">
               <h4 style={{ marginBottom: '1rem' }}>Full Text</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                <button onClick={() => setShowViewer(!showViewer)} className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                  <BookOpen size={16} /> {showViewer ? 'Hide Viewer' : 'Read Online'}
+                <button
+                  onClick={() => setShowReader(!showReader)}
+                  className="btn btn-primary"
+                  style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <BookOpen size={16} /> {showReader ? 'Hide Article' : 'Read Online'}
                 </button>
-                <a href={`/api/articles/${article.id}/download`} download className="btn btn-outline" style={{ width: '100%', justifyContent: 'center' }} target="_blank" rel="noreferrer">
-                  <Download size={16} /> Download PDF
-                </a>
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="btn btn-outline"
+                  style={{ width: '100%', justifyContent: 'center', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: downloading ? 0.7 : 1, cursor: downloading ? 'not-allowed' : 'pointer' }}
+                >
+                  {downloadDone
+                    ? <><CheckCircle size={16} color="green" /> Downloaded!</>
+                    : downloading
+                      ? <><span style={{ width: 16, height: 16, border: '2px solid var(--gray-300)', borderTopColor: 'var(--navy)', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.7s linear infinite' }} /> Preparing…</>
+                      : <><Download size={16} /> Download PDF</>
+                  }
+                </button>
               </div>
+              <p style={{ fontSize: '0.75rem', color: 'var(--gray-400)', marginTop: '0.875rem', lineHeight: 1.6 }}>
+                Open access · Free to read and download · CC BY 4.0
+              </p>
             </div>
 
             <div className="card">

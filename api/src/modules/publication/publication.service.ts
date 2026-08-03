@@ -88,9 +88,16 @@ export async function publishArticle(submissionId: string, editorId: string, opt
   }
 
   const article = await prisma.$transaction(async (tx) => {
+    const publicUrl = submission.title
+      .toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+      + '-' + Date.now();
     const a = await tx.article.create({
       data: {
         submissionId,
+        journalId: submission.journalId,
+        title: submission.title,
+        abstract: submission.abstract,
+        publicUrl,
         issueId: opts.issueId,
         subjectId: submission.subjectId,
         doi,
