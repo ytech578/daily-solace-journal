@@ -85,7 +85,7 @@ export function Navbar() {
         transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         height: 'var(--header-h)',
       }}>
-      <div className="container" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+      <div className="container mobile-gap-4" style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
 
         {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: '#fff', textDecoration: 'none' }}>

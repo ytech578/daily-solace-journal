@@ -65,7 +65,7 @@ export default function HomePage() {
   return (
     <>
       {/* ─── Premium Hero Section ───────────────────────────────────────────── */}
-      <section style={{
+      <section className="mobile-hero-padding" style={{
         background: 'linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 40%, #1e3a8a 100%)',
         padding: '9rem 0 7rem',
         position: 'relative',
@@ -118,7 +118,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.6 }}
             style={{ marginTop: '5rem', maxWidth: 720, margin: '5rem auto 0' }}
           >
-            <form onSubmit={handleSearch} style={{ display: 'flex', background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', boxShadow: '0 15px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
+            <form onSubmit={handleSearch} className="mobile-search-form" style={{ display: 'flex', background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderRadius: '99px', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', boxShadow: '0 15px 40px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1)' }}>
               <div style={{ display: 'flex', alignItems: 'center', padding: '0 1.25rem', color: 'var(--gold)' }}>
                 <Search size={22} />
               </div>
@@ -127,9 +127,10 @@ export default function HomePage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search articles, authors, DOIs, or keywords…" 
                 suppressHydrationWarning
+                className="mobile-search-input"
                 style={{ flex: 1, background: 'transparent', border: 'none', padding: '0.8rem 0', color: '#fff', fontSize: '1.1rem', outline: 'none', fontFamily: '"Outfit", sans-serif' }} 
               />
-              <button type="submit" suppressHydrationWarning className="btn" style={{ borderRadius: '99px', padding: '0.8rem 2.5rem', fontSize: '1.05rem', background: 'var(--gold)', color: '#fff', border: 'none' }}>
+              <button type="submit" suppressHydrationWarning className="btn mobile-search-btn" style={{ borderRadius: '99px', padding: '0.8rem 2.5rem', fontSize: '1.05rem', background: 'var(--gold)', color: '#fff', border: 'none' }}>
                 Search
               </button>
             </form>
@@ -198,7 +199,7 @@ export default function HomePage() {
                    <div className="skeleton" style={{ width: 40, height: 40, borderRadius: '50%' }} />
                  </div>
               ) : recentArticles.map((a: any, i: number) => (
-                <motion.div key={a.id} variants={itemVariants} className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', padding: '2rem', border: '1px solid var(--gray-100)', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', borderRadius: '1.25rem', transition: 'all 0.3s ease' }} whileHover={{ y: -3, boxShadow: '0 15px 40px rgba(0,0,0,0.06)' }}>
+                <motion.div key={a.id} variants={itemVariants} className="card mobile-flex-col mobile-p-4 mobile-gap-4 mobile-items-start" style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem', padding: '2rem', border: '1px solid var(--gray-100)', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', borderRadius: '1.25rem', transition: 'all 0.3s ease' }} whileHover={{ y: -3, boxShadow: '0 15px 40px rgba(0,0,0,0.06)' }}>
                   <div style={{ width: 60, height: 60, borderRadius: '1.25rem', background: 'linear-gradient(135deg, rgba(200,151,42,0.1), rgba(200,151,42,0.05))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <BookOpen size={26} color="var(--gold)" />
                   </div>
@@ -212,7 +213,7 @@ export default function HomePage() {
                       <span className="badge" style={{ background: 'var(--gray-50)', color: 'var(--gray-600)' }}>{a.publishedAt ? new Date(a.publishedAt).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }) : '—'}</span>
                     </div>
                   </div>
-                  <Link href={`/articles/${a.id}`} className="btn btn-outline btn-sm hide-on-mobile" style={{ flexShrink: 0, borderRadius: 999 }}>Read Article →</Link>
+                  <Link href={`/articles/${a.id}`} className="btn btn-outline btn-sm hide-on-mobile mobile-hide" style={{ flexShrink: 0, borderRadius: 999 }}>Read Article →</Link>
                 </motion.div>
               ))}
             </div>

@@ -95,7 +95,7 @@ export default function JournalsPage() {
                   const theme = getTheme(j.name);
                   return (
                     <motion.div key={j.id} variants={itemVariants} whileHover={{ y: -4 }}>
-                      <Link href={`/journals/${j.slug}`} className="card" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%', gap: '1.5rem', padding: '2.5rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)', borderTop: `4px solid ${theme.accent}`, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', transition: 'all 0.3s ease', background: '#fff' }}>
+                      <Link href={`/journals/${j.slug}`} className="card mobile-flex-col mobile-p-4 mobile-gap-4 mobile-items-start" style={{ textDecoration: 'none', display: 'flex', flexDirection: 'column', height: '100%', gap: '1.5rem', padding: '2.5rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)', borderTop: `4px solid ${theme.accent}`, boxShadow: '0 10px 30px rgba(0,0,0,0.03)', transition: 'all 0.3s ease', background: '#fff' }}>
                         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.5rem' }}>
                           <div style={{ width: 64, height: 64, borderRadius: '1rem', background: theme.bg, border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '2rem', boxShadow: 'inset 0 2px 10px rgba(255,255,255,0.5)' }}>
                             {theme.emoji}

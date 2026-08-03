@@ -497,14 +497,29 @@ textarea.form-input {
 @media (max-width: 768px) {
   .portal-layout { grid-template-columns: 1fr; }
   .portal-sidebar { display: none; }
-  section { padding: 4rem 0; }
+  section { padding: 4rem 0 !important; }
   
   .grid-4-cols, 
   .grid-3-cols, 
   .grid-2-cols, 
-  .footer-grid { 
-    grid-template-columns: 1fr; 
+  .footer-grid,
+  .journal-detail-grid { 
+    grid-template-columns: 1fr !important; 
   }
+  
+  /* Mobile UI strict overrides */
+  .mobile-flex-col { flex-direction: column !important; align-items: stretch !important; }
+  .mobile-items-start { align-items: flex-start !important; }
+  .mobile-w-full { width: 100% !important; }
+  .mobile-gap-4 { gap: 1rem !important; }
+  .mobile-text-center { text-align: center !important; }
+  .mobile-hero-padding { padding: 5rem 0 4rem !important; }
+  .mobile-p-4 { padding: 1.25rem !important; }
+  .mobile-hide { display: none !important; }
+  .mobile-badge-wrap { flex-wrap: wrap !important; }
+  .mobile-search-form { flex-direction: column !important; border-radius: 1.25rem !important; padding: 1rem !important; }
+  .mobile-search-btn { width: 100% !important; border-radius: 99px !important; }
+  .mobile-search-input { padding: 0.5rem 0 !important; text-align: center !important; }
 }
 
 /* ─── Skeleton Loading ───────────────────────────────────────────────────────── */

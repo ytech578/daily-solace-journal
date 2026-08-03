@@ -96,9 +96,9 @@ export default function ArticlesPage() {
           {isLoading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {[1, 2, 3].map(i => (
-                <div key={i} className="card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', padding: '2rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)' }}>
+                <div key={i} className="card mobile-flex-col mobile-p-4 mobile-gap-4 mobile-items-start" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', padding: '2rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)' }}>
                   <div className="skeleton" style={{ width: 64, height: 64, borderRadius: '1rem', flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
+                  <div className="mobile-w-full" style={{ flex: 1 }}>
                     <div className="skeleton skeleton-text" style={{ width: '80%', marginBottom: '0.875rem', height: '1.25rem' }} />
                     <div className="skeleton skeleton-text" style={{ width: '100%', marginBottom: '0.5rem' }} />
                     <div className="skeleton skeleton-text" style={{ width: '70%' }} />
@@ -127,14 +127,14 @@ export default function ArticlesPage() {
               <motion.div initial="hidden" animate="visible" variants={containerVariants} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <AnimatePresence>
                   {data.items.map((a: any) => (
-                    <motion.div key={a.id} variants={itemVariants} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="card" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', padding: '2rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
+                    <motion.div key={a.id} variants={itemVariants} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.2 }} className="card mobile-flex-col mobile-p-4 mobile-gap-4 mobile-items-start" style={{ display: 'flex', gap: '1.5rem', alignItems: 'flex-start', padding: '2rem', borderRadius: '1.25rem', border: '1px solid var(--gray-100)', boxShadow: '0 4px 15px rgba(0,0,0,0.02)', position: 'relative', overflow: 'hidden' }}>
                       <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'linear-gradient(to bottom, var(--navy), var(--gold))' }} />
                       
                       <div style={{ width: 56, height: 56, borderRadius: '1rem', background: 'linear-gradient(135deg, rgba(11,29,81,0.05), rgba(11,29,81,0.02))', border: '1px solid var(--gray-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <BookOpen size={24} color="var(--navy)" />
                       </div>
                       
-                      <div style={{ flex: 1 }}>
+                      <div className="mobile-w-full" style={{ flex: 1 }}>
                         <Link href={`/articles/${a.id}`} style={{ fontFamily: '"Playfair Display",Georgia,serif', fontWeight: 700, fontSize: '1.35rem', color: 'var(--navy)', textDecoration: 'none', lineHeight: 1.4, display: 'block', marginBottom: '0.5rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--navy)'}>
                           {a.submission?.title}
                         </Link>
