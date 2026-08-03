@@ -126,9 +126,10 @@ export default function HomePage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search articles, authors, DOIs, or keywords…" 
+                suppressHydrationWarning
                 style={{ flex: 1, background: 'transparent', border: 'none', padding: '0.8rem 0', color: '#fff', fontSize: '1.1rem', outline: 'none', fontFamily: '"Outfit", sans-serif' }} 
               />
-              <button type="submit" className="btn" style={{ borderRadius: '99px', padding: '0.8rem 2.5rem', fontSize: '1.05rem', background: 'var(--gold)', color: '#fff', border: 'none' }}>
+              <button type="submit" suppressHydrationWarning className="btn" style={{ borderRadius: '99px', padding: '0.8rem 2.5rem', fontSize: '1.05rem', background: 'var(--gold)', color: '#fff', border: 'none' }}>
                 Search
               </button>
             </form>
