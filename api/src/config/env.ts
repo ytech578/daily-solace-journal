@@ -23,9 +23,10 @@ const envSchema = z.object({
   AWS_SECRET_ACCESS_KEY: z.string().default('placeholder'),
   AWS_S3_BUCKET_NAME: z.string().default('placeholder'),
 
-  // Resend (transactional email)
-  RESEND_API_KEY: z.string().default('placeholder'),
-  EMAIL_FROM: z.string().default('Daily Solace Journal <no-reply@dailysolacejournal.com>'),
+  // Email Microservice (Forwarded to Vercel Next.js)
+  FRONTEND_URL: z.string().default('http://localhost:3000'),
+  EMAIL_SERVICE_SECRET: z.string().default('placeholder_secret'),
+  EMAIL_FROM: z.string().default('Daily Solace Journal <no-reply@dailysolacejournal.org>'),
 
   // Razorpay (APC payments)
   RAZORPAY_KEY_ID: z.string().default('placeholder'),

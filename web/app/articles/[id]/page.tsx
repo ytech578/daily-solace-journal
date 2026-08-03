@@ -67,30 +67,28 @@ export default function ArticleDetailPage() {
     enabled: !!article?.subject?.id,
   });
 
-  // Download PDF using fetch + Blob so IDM / browser extensions cannot intercept
-  const handleDownload = useCallback(async () => {
+  // Trigger download by direct navigation so IDM / browser download managers handle it natively
+  const handleDownload = useCallback(() => {
     if (!article) return;
     setDownloading(true);
-    try {
-      const response = await fetch(`/api/articles/${article.id}/download`);
-      if (!response.ok) throw new Error('Download failed');
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const sanitized = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
-      a.href = url;
-      a.download = `${sanitized}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+    
+    // Using window.location.href or a hidden iframe allows IDM and browsers to handle the
+    // attachment natively. fetch() + Blob gets intercepted and aborted by IDM causing errors.
+    const downloadUrl = `/api/articles/${article.id}/download`;
+    
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = ''; // Let the server headers determine the filename
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // Simulate a brief loading state for UX
+    setTimeout(() => {
+      setDownloading(false);
       setDownloadDone(true);
       setTimeout(() => setDownloadDone(false), 3000);
-    } catch (err) {
-      alert('Download failed. Please try again.');
-    } finally {
-      setDownloading(false);
-    }
+    }, 800);
   }, [article]);
 
   if (isLoading) return (
@@ -116,6 +114,20 @@ export default function ArticleDetailPage() {
 
   // Parse abstract sections
   const abstractSections = parseAbstract(sub.abstract);
+
+  // Parse full text sections if available
+  const fullTextSections: { heading: string; body: string }[] = [];
+  if (sub.fullText) {
+    const parts = sub.fullText.split(/(?=\n\d+\.\s+[A-Z])/);
+    for (const part of parts) {
+      const match = part.match(/^\n?(\d+\.\s+.*?)\n([\s\S]*)/);
+      if (match) {
+        fullTextSections.push({ heading: match[1].trim(), body: match[2].trim() });
+      } else {
+        fullTextSections.push({ heading: '', body: part.trim() });
+      }
+    }
+  }
 
   // Citations
   const year = article.publishedAt ? new Date(article.publishedAt).getFullYear() : '—';
@@ -298,6 +310,24 @@ export default function ArticleDetailPage() {
                       <span style={{ fontStyle: 'italic', color: 'var(--gray-600)', fontSize: '0.9rem' }}>
                         {sub.keywords.join(', ')}
                       </span>
+                    </div>
+                  )}
+
+                  {/* Full Text Sections */}
+                  {fullTextSections.length > 0 && (
+                    <div style={{ marginBottom: '2rem', paddingTop: '2rem', borderTop: '2px solid var(--gray-100)' }}>
+                      {fullTextSections.map((section, i) => (
+                        <div key={i} style={{ marginBottom: '2rem' }}>
+                          {section.heading && (
+                            <h3 style={{ fontSize: '1.25rem', color: 'var(--navy)', marginBottom: '1rem', fontFamily: '"Playfair Display",Georgia,serif' }}>
+                              {section.heading}
+                            </h3>
+                          )}
+                          <p style={{ lineHeight: 1.9, color: '#333', fontSize: '1.05rem', textAlign: 'justify', whiteSpace: 'pre-wrap' }}>
+                            {section.body}
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   )}
 

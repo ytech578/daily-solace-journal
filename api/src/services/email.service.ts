@@ -1,7 +1,5 @@
-import { Resend } from 'resend';
+import axios from 'axios';
 import { env } from '../config/env';
-
-const resend = new Resend(env.RESEND_API_KEY);
 
 interface WelcomeOpts {
   to: string;
@@ -100,7 +98,7 @@ function layout(body: string, previewText: string) {
 // ─── Email functions ──────────────────────────────────────────────────────────
 
 const sendEmail = async (options: any) => {
-  if (env.RESEND_API_KEY.includes('placeholder')) {
+  if (env.EMAIL_SERVICE_SECRET.includes('placeholder')) {
     console.log('\n=========================================');
     console.log(`[MOCK EMAIL] To: ${options.to}`);
     console.log(`[MOCK EMAIL] Subject: ${options.subject}`);
@@ -108,7 +106,18 @@ const sendEmail = async (options: any) => {
     console.log('=========================================\n');
     return { id: 'mock_email_id' };
   }
-  return resend.emails.send(options);
+
+  try {
+    const response = await axios.post(`${env.FRONTEND_URL}/api/email/send`, options, {
+      headers: {
+        Authorization: `Bearer ${env.EMAIL_SERVICE_SECRET}`,
+      },
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('[EMAIL SERVICE ERROR]', error.response?.data || error.message);
+    throw new Error('Failed to forward email to Vercel microservice');
+  }
 };
 
 export const emailService = {
