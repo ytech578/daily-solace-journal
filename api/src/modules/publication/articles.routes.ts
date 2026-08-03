@@ -291,16 +291,18 @@ articlesRouter.get(
     if (!article) throw new AppError(404, 'Article not found');
 
     const file = article.submission.files[0];
+    const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
 
-    // 1. Serve uploaded file if it exists on disk
-    if (file && !file.storagePath.startsWith('http')) {
-      if (fs.existsSync(file.storagePath)) {
-        prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
-        const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
-        return res.sendFile(path.resolve(file.storagePath));
-      }
+    // 1. Serve uploaded file if it exists on disk (skip placeholders and non-existent paths)
+    if (file && !file.storagePath.startsWith('http') && !file.storagePath.includes('placeholder')) {
+      try {
+        if (fs.existsSync(file.storagePath)) {
+          prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
+          return res.sendFile(path.resolve(file.storagePath));
+        }
+      } catch (_) { /* fall through to generation */ }
     }
 
     // 2. Redirect to external file URL
@@ -310,26 +312,31 @@ articlesRouter.get(
     }
 
     // 3. Check pdfUrl field for a file on disk
-    if (article.pdfUrl) {
-      const filePath = path.join(process.cwd(), article.pdfUrl);
-      if (fs.existsSync(filePath)) {
-        prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
-        const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
-        return res.sendFile(path.resolve(filePath));
-      }
+    if (article.pdfUrl && !article.pdfUrl.includes('placeholder')) {
+      try {
+        const filePath = path.join(process.cwd(), article.pdfUrl);
+        if (fs.existsSync(filePath)) {
+          prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
+          res.setHeader('Content-Type', 'application/pdf');
+          res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
+          return res.sendFile(path.resolve(filePath));
+        }
+      } catch (_) { /* fall through to generation */ }
     }
 
-    // 4. No file anywhere — generate a real PDF on-the-fly from article data using PDFKit
-    prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
-    const pdfBuffer = await generateArticlePdf(article as any);
-    const sanitizedTitle = article.submission.title.replace(/[^a-z0-9]/gi, '_').slice(0, 60);
+    // 4. No real file anywhere — generate a complete PDF on-the-fly using PDFKit
+    try {
+      prisma.article.update({ where: { id }, data: { downloadCount: { increment: 1 } } }).catch(() => {});
+      const pdfBuffer = await generateArticlePdf(article as any);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
-    res.setHeader('Content-Length', pdfBuffer.length);
-    return res.send(pdfBuffer);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${sanitizedTitle}.pdf"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      return res.send(pdfBuffer);
+    } catch (pdfErr) {
+      console.error('PDFKit generation failed:', pdfErr);
+      throw new AppError(500, 'Failed to generate article PDF. Please try again later.');
+    }
   }),
 );
 
