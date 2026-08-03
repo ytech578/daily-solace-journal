@@ -13,7 +13,7 @@ import { useState, useEffect, useCallback } from 'react';
 function parseAbstract(text: string): { label: string | null; body: string }[] {
   const LABELS = ['Objective', 'Background', 'Methods', 'Results', 'Conclusion', 'Introduction', 'Discussion'];
   // Use non-capturing (?:) so split() does not emit the label name as a spurious standalone array element
-  const pattern = new RegExp(`(?=\\b(?:${LABELS.join('|')}):)`, 'i');
+  const pattern = new RegExp(`(?=(?:${LABELS.join('|')}):)`, 'i');
   const parts = text.split(pattern).filter(s => s.trim());
 
   // Check if any LABEL exists
