@@ -57,8 +57,10 @@ export default function AuthorProfilePage() {
               </Link>
               
               <div style={{ fontSize: '0.9rem', color: 'var(--gray-600)', marginBottom: '1rem' }}>
-                {article.submission.author.name}
-                {article.submission.coAuthors?.length > 0 && `, ${article.submission.coAuthors.map((a: any) => a.name).join(', ')}`}
+                {Array.from(new Set([
+                  article.submission.author.name,
+                  ...(article.submission.coAuthors?.map((a: any) => a.name) || [])
+                ])).join(', ')}
               </div>
 
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', fontSize: '0.8125rem', color: 'var(--gray-500)', borderTop: '1px solid var(--gray-100)', paddingTop: '1rem' }}>
