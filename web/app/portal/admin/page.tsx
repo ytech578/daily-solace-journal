@@ -15,7 +15,7 @@ export default function AdminPanel() {
   const router = useRouter();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'APPLICATIONS' | 'STAFF'>('OVERVIEW');
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'APPLICATIONS' | 'STAFF' | 'MESSAGES'>('OVERVIEW');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteMsg, setInviteMsg] = useState('');
   
@@ -42,6 +42,12 @@ export default function AdminPanel() {
     enabled: !!user && activeTab === 'APPLICATIONS',
   });
 
+  const { data: messages = [], isLoading: loadingMessages } = useQuery({
+    queryKey: ['admin-messages'],
+    queryFn: async () => (await api.get('/admin/messages')).data,
+    enabled: !!user && activeTab === 'MESSAGES',
+  });
+
   const changeRole = useMutation({
     mutationFn: async ({ id, role }: { id: string; role: string }) =>
       api.patch(`/admin/users/${id}/role`, { role }),
@@ -58,6 +64,17 @@ export default function AdminPanel() {
     mutationFn: async (email: string) => api.post('/admin/editors', { email }),
     onSuccess: () => { setInviteMsg('Invitation sent successfully!'); setInviteEmail(''); },
     onError: (err: any) => setInviteMsg(err.response?.data?.error || 'Failed to send invitation.'),
+  });
+
+  const markMessageRead = useMutation({
+    mutationFn: async ({ id, isRead }: { id: string; isRead: boolean }) =>
+      api.patch(`/admin/messages/${id}/read`, { isRead }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-messages'] }),
+  });
+
+  const deleteMessage = useMutation({
+    mutationFn: async (id: string) => api.delete(`/admin/messages/${id}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-messages'] }),
   });
 
   if (isLoading || !user) return null;
@@ -92,7 +109,7 @@ export default function AdminPanel() {
 
         {/* Tabs */}
         <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--gray-200)', marginBottom: '2rem' }}>
-          {['OVERVIEW', 'USERS', 'APPLICATIONS', 'STAFF'].map(t => (
+          {['OVERVIEW', 'USERS', 'APPLICATIONS', 'STAFF', 'MESSAGES'].map(t => (
             <button key={t} onClick={() => setActiveTab(t as any)} style={{
               padding: '0.75rem 1rem', background: 'none', border: 'none', cursor: 'pointer',
               borderBottom: activeTab === t ? '2px solid var(--navy)' : '2px solid transparent',
@@ -229,6 +246,54 @@ export default function AdminPanel() {
             {inviteMsg && (
               <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: 8, fontSize: '0.875rem', background: inviteMsg.includes('success') ? '#ecfdf5' : '#fef2f2', color: inviteMsg.includes('success') ? '#047857' : '#dc2626' }}>
                 {inviteMsg}
+              </div>
+            )}
+          </div>
+        {activeTab === 'MESSAGES' && (
+          <div>
+            <h3 style={{ fontFamily: 'Inter,sans-serif', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: '1.25rem' }}>Contact Messages ({messages.length})</h3>
+            
+            {loadingMessages ? (
+              <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray-400)' }}>Loading…</div>
+            ) : messages.length === 0 ? (
+              <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--gray-400)' }}>No messages found.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {messages.map((m: any) => (
+                  <div key={m.id} className="card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', opacity: m.isRead ? 0.7 : 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                          {!m.isRead && <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--gold)' }} />}
+                          <h4 style={{ color: 'var(--navy)' }}>{m.subject}</h4>
+                        </div>
+                        <div style={{ fontSize: '0.875rem', color: 'var(--gray-600)' }}>
+                          <strong>{m.name}</strong> ({m.email}) • {new Date(m.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          className="btn btn-outline btn-sm"
+                          onClick={() => markMessageRead.mutate({ id: m.id, isRead: !m.isRead })}
+                          disabled={markMessageRead.isPending}
+                        >
+                          {m.isRead ? 'Mark Unread' : 'Mark Read'}
+                        </button>
+                        <button 
+                          className="btn btn-outline btn-sm"
+                          style={{ color: 'var(--error)', borderColor: 'var(--error)' }}
+                          onClick={() => deleteMessage.mutate(m.id)}
+                          disabled={deleteMessage.isPending}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--gray-800)', background: 'var(--gray-50)', padding: '1rem', borderRadius: 8, whiteSpace: 'pre-wrap' }}>
+                      {m.message}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

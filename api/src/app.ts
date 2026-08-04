@@ -17,6 +17,7 @@ import { notificationsRouter } from './modules/notifications/notifications.route
 import { searchRouter } from './modules/search/search.routes';
 import { journalsRouter } from './modules/journals/journals.routes';
 import { reviewerApplicationsRouter } from './modules/reviewer-applications/reviewer-applications.routes';
+import { contactRouter } from './modules/contact/contact.routes';
 
 export const app = express();
 
@@ -44,6 +45,9 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', env: env.NODE_ENV }))
 // Auth & Users
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
+
+// Contact
+app.use('/api/contact', contactRouter);
 
 // Journal directory
 app.use('/api/journals', journalsRouter);

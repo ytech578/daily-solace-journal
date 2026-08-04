@@ -20,3 +20,8 @@ adminRouter.delete('/users/:id', asyncHandler(adminController.deactivateUserHand
 adminRouter.get('/stats', asyncHandler(adminController.getStatsHandler));
 adminRouter.post('/editors', validateBody(inviteEditorSchema), asyncHandler(adminController.inviteEditorHandler));
 adminRouter.post('/admins', validateBody(createAdminSchema), asyncHandler(adminController.createAdminHandler));
+
+// Contact Messages
+adminRouter.get('/messages', asyncHandler(adminController.listContactMessagesHandler));
+adminRouter.patch('/messages/:id/read', asyncHandler(adminController.markContactMessageReadHandler));
+adminRouter.delete('/messages/:id', asyncHandler(adminController.deleteContactMessageHandler));
