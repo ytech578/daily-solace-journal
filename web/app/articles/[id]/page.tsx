@@ -108,8 +108,10 @@ export default function ArticleDetailPage() {
 
   const sub = article.submission;
   
-  // Deduplicate authors by name to prevent double entries (since sub.author might also be in sub.coAuthors)
-  const allAuthors = [sub.author, ...(sub.coAuthors ?? [])];
+  // Deduplicate authors by name to prevent double entries. 
+  // We put coAuthors first because they contain the author's institution (description), 
+  // ensuring the deduplicator keeps the entry with the description rather than the plain User entry.
+  const allAuthors = [...(sub.coAuthors ?? []), sub.author];
   const uniqueAuthors: any[] = [];
   const seenNames = new Set();
   for (const a of allAuthors) {

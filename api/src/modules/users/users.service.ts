@@ -22,11 +22,32 @@ export async function getMe(userId: string) {
 }
 
 export async function getPublicProfile(userId: string) {
-  const user = await prisma.user.findUnique({
+  let user: any = await prisma.user.findUnique({
     where: { id: userId, isActive: true },
     select: { id: true, name: true, bio: true, institution: true, country: true, profileImageUrl: true, orcid: true },
   });
-  if (!user) throw new AppError(404, 'User not found');
+  
+  if (!user) {
+    // Fallback: If not a registered user, check if this is a SubmissionAuthor ID
+    // (for authors who only exist in relation to a submission and have no profile)
+    const subAuthor = await prisma.submissionAuthor.findUnique({
+      where: { id: userId },
+    });
+    
+    if (!subAuthor) {
+      throw new AppError(404, 'User not found');
+    }
+    
+    user = {
+      id: subAuthor.id,
+      name: subAuthor.name,
+      institution: subAuthor.institution,
+      bio: null,
+      country: null,
+      profileImageUrl: null,
+      orcid: null,
+    };
+  }
 
   const articles = await prisma.article.findMany({
     where: {
@@ -34,6 +55,7 @@ export async function getPublicProfile(userId: string) {
       OR: [
         { submission: { authorId: userId } },
         { submission: { coAuthors: { some: { userId } } } },
+        { submission: { coAuthors: { some: { id: userId } } } }, // Match by SubmissionAuthor ID
       ],
     },
     select: {
