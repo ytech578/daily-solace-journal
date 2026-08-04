@@ -107,7 +107,18 @@ export default function ArticleDetailPage() {
   );
 
   const sub = article.submission;
-  const authors = [sub.author, ...(sub.coAuthors ?? [])];
+  
+  // Deduplicate authors by name to prevent double entries (since sub.author might also be in sub.coAuthors)
+  const allAuthors = [sub.author, ...(sub.coAuthors ?? [])];
+  const uniqueAuthors: any[] = [];
+  const seenNames = new Set();
+  for (const a of allAuthors) {
+    if (!seenNames.has(a.name)) {
+      seenNames.add(a.name);
+      uniqueAuthors.push(a);
+    }
+  }
+  const authors = uniqueAuthors;
 
   // Reading time (200 wpm)
   const wordCount = sub.abstract.split(/\s+/).length;
