@@ -116,3 +116,28 @@ export async function createAdmin(input: CreateAdminInput) {
 
   return user;
 }
+
+export async function listContactMessages() {
+  return prisma.contactMessage.findMany({
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export async function markContactMessageRead(id: string, isRead: boolean) {
+  const message = await prisma.contactMessage.findUnique({ where: { id } });
+  if (!message) throw new AppError(404, 'Message not found');
+
+  return prisma.contactMessage.update({
+    where: { id },
+    data: { isRead },
+  });
+}
+
+export async function deleteContactMessage(id: string) {
+  const message = await prisma.contactMessage.findUnique({ where: { id } });
+  if (!message) throw new AppError(404, 'Message not found');
+
+  return prisma.contactMessage.delete({
+    where: { id },
+  });
+}
