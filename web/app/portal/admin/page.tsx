@@ -249,6 +249,8 @@ export default function AdminPanel() {
               </div>
             )}
           </div>
+        )}
+
         {activeTab === 'MESSAGES' && (
           <div>
             <h3 style={{ fontFamily: 'Inter,sans-serif', fontWeight: 700, fontSize: '1rem', color: 'var(--navy)', marginBottom: '1.25rem' }}>Contact Messages ({messages.length})</h3>
